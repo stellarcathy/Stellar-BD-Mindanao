@@ -11,6 +11,7 @@
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f7faf8;color:var(--ink)}
 button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:flex}
 .sidebar{width:258px;background:linear-gradient(180deg,#006d39,#005a31);color:#fff;padding:20px 14px;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-report-archive{margin-top:8px;margin-bottom:10px}.sidebar-report-archive .report-item b{color:#fff;font-size:11px}.sidebar-report-archive .report-item span{color:rgba(255,255,255,.78);font-size:9px;margin-top:2px}.sidebar-report-archive .archive-content::-webkit-scrollbar{width:5px}.sidebar-report-archive .archive-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:5px}
 .brand{background:#fff;border-radius:10px;padding:7px 8px;margin-bottom:20px}.brand img{width:100%;height:auto;max-height:78px;object-fit:contain;display:block}
 .nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#eaf7ef;text-align:left;padding:12px 14px;border-radius:9px;font-weight:650}.nav button:hover,.nav button.active{background:#0b984f;color:#fff}.sidebox{margin-top:auto;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:14px;font-size:12px}.sidebox strong{font-size:22px;display:block;margin-top:5px}.copy{font-size:10px;opacity:.75;margin-top:20px}
 main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}.topbrand{display:flex;align-items:center;gap:0}.topbrand img{width:150px;height:auto;max-height:60px;object-fit:contain;display:block}.topbrand strong{font-size:21px}.topbrand span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.user{display:flex;align-items:center;gap:9px;font-size:13px}.avatar{width:34px;height:34px;border-radius:50%;background:var(--green2);color:#fff;display:grid;place-items:center;font-weight:800}
@@ -20,24 +21,23 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .detail h2{margin:0;font-size:19px}.type{font-size:11px;color:var(--green);font-weight:800;margin:4px 0 12px}.drow{border-bottom:1px solid var(--line);padding:9px 0}.lab{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}.val{font-size:13px;line-height:1.45;margin-top:3px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}.empty{padding:35px 8px;text-align:center;color:var(--muted);font-size:13px}
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}.table{width:100%;border-collapse:collapse;min-width:800px}.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:center;font-size:12px;vertical-align:top}.table th{background:var(--pale);color:var(--green);font-weight:800}
 .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.form .full{grid-column:1/-1}.form label{display:block;font-size:11px;font-weight:800;margin-bottom:5px}.form textarea{min-height:85px;resize:vertical;width:100%}.form input,.form select{width:100%;min-height:42px}.actions{display:flex;gap:8px;margin-top:12px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.opcard{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff}.opcard h3{font-size:14px;margin:0 0 5px}.opcard p{font-size:11px;color:var(--muted);margin:4px 0}.report{max-width:1000px}.report h1{font-size:24px;color:var(--green)}.report h2{font-size:17px;color:var(--green);margin-top:22px}.report li,.report p{font-size:13px;line-height:1.55}
-@media(max-width:900px){.sidebar{width:76px;padding:12px 8px}.brand{padding:4px}.brand img{height:44px}.nav button{font-size:0;text-align:center;padding:13px}.nav button:first-letter{font-size:18px}.sidebox,.copy{display:none}.map-layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.topbar{padding:0 13px;height:70px}.topbrand strong{font-size:14px}.topbrand span{font-size:10px}.topbrand img{width:105px;height:auto;max-height:48px}.content{padding:14px 11px}.form{grid-template-columns:1fr}.form .full{grid-column:auto}.cards{grid-template-columns:1fr}.bd-map{height:410px}}
+@media(max-width:900px){.sidebar{width:76px;padding:12px 8px}.brand{padding:4px}.brand img{height:44px}.nav button{font-size:0;text-align:center;padding:13px}.nav button:first-letter{font-size:18px}.sidebar-report-archive,.sidebox,.copy{display:none}.map-layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.topbar{padding:0 13px;height:70px}.topbrand strong{font-size:14px}.topbrand span{font-size:10px}.topbrand img{width:105px;height:auto;max-height:48px}.content{padding:14px 11px}.form{grid-template-columns:1fr}.form .full{grid-column:auto}.cards{grid-template-columns:1fr}.bd-map{height:410px}}
 
 .bd-map .leaflet-container{width:100%!important;height:100%!important;background:#dceff4;overflow:hidden}
 .bd-map .leaflet-tile{max-width:none!important}
 .bd-map .leaflet-control-zoom a{color:#16352a}
 
-.report-archive{display:flex;flex-direction:column;gap:13px}
-.report-archive>.panel{order:1}
-.report-archive>.report-list{order:2}
-.report-list{display:block;align-content:start}
-.archive-panel{padding:0!important;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff}
-.archive-toggle{width:100%;border:0;background:var(--green);color:#fff;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:800;letter-spacing:.2px;cursor:pointer;text-align:left}
-.archive-toggle:hover{background:var(--green2)}
-.archive-toggle .archive-arrow{font-size:16px;transition:transform .2s ease}
+.report-archive{display:block}
+.report-list{display:none}
+.archive-panel{padding:0!important;overflow:hidden;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.08);box-shadow:none}
+.archive-toggle{width:100%;border:0;background:transparent;color:#fff;padding:10px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;letter-spacing:.2px;cursor:pointer;text-align:left}
+.archive-toggle:hover{background:rgba(11,155,82,.45)}
+.archive-toggle .archive-arrow{font-size:12px;transition:transform .2s ease}
 .archive-toggle.open .archive-arrow{transform:rotate(180deg)}
-.archive-content{padding:12px;display:none}
+.archive-content{padding:7px;display:none;max-height:330px;overflow-y:auto}
 .archive-content.open{display:block}
-.report-item{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px;text-align:left}
+.report-item{width:100%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:9px;text-align:left;margin-bottom:6px}
+.report-item:hover{background:rgba(11,155,82,.55)}
 .report-item.active{border-color:var(--green2);box-shadow:0 0 0 2px rgba(11,155,82,.08)}
 .report-item b{display:block;color:var(--ink);font-size:13px}.report-item span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .report-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
@@ -123,6 +123,27 @@ body:not(.ready)>.app{display:none!important}
 <button data-view="followups">◷ Follow-ups</button>
 <button data-view="reports">▤ Reports</button>
 </nav>
+<div class="sidebar-report-archive">
+  <div class="archive-panel">
+    <button type="button" class="archive-toggle" id="archiveToggle" aria-expanded="false" aria-controls="weeklyReportArchiveContent">
+      <span>▤ WEEKLY REPORT ARCHIVE</span><span class="archive-arrow">▼</span>
+    </button>
+    <div class="archive-content" id="weeklyReportArchiveContent">
+      <div id="weeklyReportArchiveList">
+        <button type="button" class="report-item active" data-report-no="1"><b>Weekly Report No. 001</b><span>Week 25 • June 18–19, 2026</span><span>10 company visits</span></button>
+        <button type="button" class="report-item" data-report-no="2"><b>Weekly Report No. 002</b><span>Week 26 • June 23–25, 2026</span><span>9 organizations visited</span></button>
+        <button type="button" class="report-item" data-report-no="3"><b>Weekly Report No. 003</b><span>Week 27 • June 29–July 3, 2026</span><span>Facility assessment + government engagement</span></button>
+        <button type="button" class="report-item" data-report-no="4"><b>Weekly Report No. 004</b><span>Week 28 • July 6–10, 2026</span><span>Syngenta + coffee industry engagement</span></button>
+        <button type="button" class="report-item" data-report-no="5"><b>Weekly Report No. 005</b><span>Week 29 • July 13–17, 2026</span><span>22 MT drying trial + 50 MT/month deal</span></button>
+        <button type="button" class="report-item" data-report-no="6"><b>Weekly Report No. 006</b><span>Week 30 • July 20–24, 2026</span><span>Expanded corn customer/supplier pipeline</span></button>
+        <button type="button" class="report-item" data-report-no="7"><b>Weekly Report No. 007</b><span>Week 31 • July 27–31, 2026</span><span>Corn market linkage + sourcing partnerships</span></button>
+        <button type="button" class="report-item" data-report-no="8"><b>Weekly Report No. 008</b><span>Week 32 • August 3–7, 2026</span><span>First Landan wet cob delivery: 10,410 kg</span></button>
+        <button type="button" class="report-item" data-report-no="9"><b>Weekly Report No. 009</b><span>Week 33 • August 10–14, 2026</span><span>Landan total: 24,030 kg + Gensan plant visit</span></button>
+        <button type="button" class="report-item" data-report-no="10"><b>Weekly Report No. 010</b><span>Week 34 • August 17–20, 2026</span><span>Gensan Feedmill plant visit completed</span></button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="sidebox">PIPELINE SUMMARY<div>🟠 New Leads <strong id="sideLeads">0</strong></div><div>🟡 Active / Ongoing <strong id="sideActive">0</strong></div><div>🟢 Closed Deals <strong id="sideClosed">0</strong></div><div style="margin-top:8px">Total <strong id="sideTotal">0</strong></div></div>
 <div class="copy">© 2026 Stellar Seeds Corporation</div>
 </aside>
@@ -148,35 +169,6 @@ body:not(.ready)>.app{display:none!important}
 
 
 <section id="reports" class="view">
-  <div class="report-archive">
-    <div class="report-list">
-      <div class="panel archive-panel">
-        <button type="button" class="archive-toggle" id="archiveToggle" aria-expanded="false" aria-controls="weeklyReportArchiveContent">
-          <span>WEEKLY REPORT ARCHIVE</span><span class="archive-arrow">▼</span>
-        </button>
-        <div class="archive-content" id="weeklyReportArchiveContent">
-        <div id="weeklyReportArchiveList">
-          <button type="button" class="report-item active" data-report-no="1">
-            <b>Weekly Report No. 001</b><span>Week 25 • June 18–19, 2026</span><span>10 company visits</span>
-          </button>
-          <button type="button" class="report-item" data-report-no="2"><b>Weekly Report No. 002</b><span>Week 26 • June 23–25, 2026</span><span>9 organizations visited</span></button>
-          <button type="button" class="report-item" data-report-no="3"><b>Weekly Report No. 003</b><span>Week 27 • June 29–July 3, 2026</span><span>Facility assessment + government engagement</span></button>
-          <button type="button" class="report-item" data-report-no="4"><b>Weekly Report No. 004</b><span>Week 28 • July 6–10, 2026</span><span>Syngenta + coffee industry engagement</span></button>
-          <button type="button" class="report-item" data-report-no="5"><b>Weekly Report No. 005</b><span>Week 29 • July 13–17, 2026</span><span>22 MT drying trial + 50 MT/month deal</span></button>
-          <button type="button" class="report-item" data-report-no="6"><b>Weekly Report No. 006</b><span>Week 30 • July 20–24, 2026</span><span>Expanded corn customer/supplier pipeline</span></button>
-          <button type="button" class="report-item" data-report-no="7"><b>Weekly Report No. 007</b><span>Week 31 • July 27–31, 2026</span><span>Corn market linkage + sourcing partnerships</span></button>
-          <button type="button" class="report-item" data-report-no="8"><b>Weekly Report No. 008</b><span>Week 32 • August 3–7, 2026</span><span>First Landan wet cob delivery: 10,410 kg</span></button>
-          <button type="button" class="report-item" data-report-no="9"><b>Weekly Report No. 009</b><span>Week 33 • August 10–14, 2026</span><span>Landan total: 24,030 kg + Gensan plant visit</span></button>
-          <button type="button" class="report-item" data-report-no="10"><b>Weekly Report No. 010</b><span>Week 34 • August 17–20, 2026</span><span>Gensan Feedmill plant visit completed</span></button>
-        </div>
-        <div class="report-photo-note" style="margin-top:9px">
-          📚 <b>Weekly report archive</b><br>
-          Reports 001–010 are now available in the archive. Select a report to view its weekly summary, key accomplishments, pipeline highlights, and next actions.
-        </div>
-        </div>
-      </div></div>
-    </div>
-
     <div class="panel">
       <div id="reportWeek1Content">
       <div class="report-head">
