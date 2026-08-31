@@ -1019,6 +1019,164 @@ const weeklyReports={
 9:{week:"Week 33 | August 10–14, 2026",summary:"Week 33 focused on expanding the sourcing network through cooperatives, consolidators, and farms while advancing key customer and supplier opportunities. Landan MPC completed a second wet cob delivery, General Santos Feedmill confirmed its plant visit, and Lamsan responded to the food-grade corn supplier inquiry.",metrics:[["Landan Total Wet Cobs","24,030 kg"],["Second Landan Delivery","13,490 kg"],["Gensan Feedmill Plant Visit","Confirmed Aug. 20"],["Supplier Accreditation","Lamsan under evaluation"],["New Commodity Opportunity","Black pepper"]],highlights:["Received Landan MPC's second 13,490 kg delivery, bringing total wet corn cobs to 24,030 kg.","Confirmed General Santos Feedmill's August 20 plant visit.","Received Lamsan, Inc.'s response regarding food-grade corn supplier accreditation and awaited approval.","Visited Surallah Farmers Agriculture Cooperative, Banga Consolidator, and Kablon Farms.","Continued communication with Pilmico and identified black pepper and other commodity opportunities."],pipeline:[["General Santos Feedmill Corp.","Feed-grade Corn","90 MT/month","Potential regular supply","Plant Visit Confirmed","Plant visit Aug. 20"],["Lamsan, Inc.","Food-grade Corn","TBD","Accredited supplier","Under Evaluation","Await approval"],["Landan MPC","Wet Corn Cobs","24,030 kg to date","Regular wet cob sourcing","Ongoing Deliveries","Monitor deliveries"],["Pilmico","Corn / Feed Ingredients","TBD","Supplier partnership","Initial Inquiry","Continue communication"],["Liwayway MPC","Wet Corn Cobs","TBD","Additional sourcing","New Lead","Continue coordination"],["Surallah Farmers Agriculture Cooperative","Corn","TBD","Supplier partnership","New Lead","Validate supply"],["Banga Consolidator","Agricultural Commodities","TBD","Sourcing partnership","New Lead","Gather supply info"],["Kablon Farms","Agricultural Commodities","TBD","Crop sourcing","New Lead","Follow up crops"]],next:["Conduct the confirmed August 20 Gensan Feedmill plant visit.","Follow up Lamsan supplier accreditation.","Monitor Landan and Liwayway wet cob sourcing.","Follow up newly identified cooperatives, consolidators, and farms.","Explore black pepper supply, quality, pricing, and buyers.","Prepare for the GCIA Board Meeting on August 26.","Continue Pilmico communication regarding corn supply opportunities."]},
 10:{week:"Week 34 | August 17–20, 2026",summary:"Week 34 focused on client mapping, business development communication, and advancing existing customer opportunities. The key milestone was the successful General Santos Feedmill Corporation plant visit on August 20, where Stellar Seeds' facilities and capabilities were presented and potential corn supply collaboration was discussed.",metrics:[["Key Customer Activity","Gensan Feedmill plant visit completed"],["Client Mapping","Continued"],["BD Communication","Inquiries and follow-ups sent"],["Landan Wet Cobs","24,030 kg received to date"],["Key Existing Deal","Bibiana Farms 50 MT/month"]],highlights:["Successfully hosted the General Santos Feedmill Corporation team for a plant tour on August 20.","Introduced Stellar Seeds Corporation's facilities and capabilities and discussed potential corn supply.","Continued mapping potential customers, suppliers, and business partners.","Prepared and sent business development inquiries and follow-up emails.","Continued monitoring and follow-up of existing Business Development Pipeline opportunities."],pipeline:[["General Santos Feedmill Corp.","Feed-grade Corn","Open","Potential regular corn supply","Plant Visit Completed","Follow up requirements"],["Landan MPC","Wet Corn Cobs","24,030 kg to date","Regular sourcing and drying support","Ongoing Deliveries","Monitor deliveries"],["Lamsan, Inc.","Food-grade Corn","TBD","Accredited supplier","Under Evaluation","Follow up approval"],["Pilmico","Corn / Feed Ingredients","TBD","Potential supply partnership","Initial Inquiry","Continue communication"],["SMCI","Food-grade Corn","100–1,000 MT on demand","Supply for San Miguel","Qualified Lead","Maintain communication"],["Bibiana Farms","Feed-grade Corn","50 MT/month","Regular corn supply","Closed Deal","Maintain supply"],["One Harvest","Corn Drying Services","22 MT trial","Regular drying service","Trial Completed","Follow up"],["Liwayway MPC","Wet Corn Cobs","TBD","Additional wet cob sourcing","New Lead","Continue coordination"],["GCIA, Inc.","Agricultural Commodities / Corn","TBD","Farmer-based sourcing","New Lead","Attend Aug. 26 Board Meeting"]],next:["Follow up with General Santos Feedmill after the plant visit and clarify specifications, volume, and next steps.","Follow up Lamsan regarding supplier approval/accreditation.","Continue communication with Pilmico.","Attend the GCIA Board Meeting on August 26.","Continue monitoring Landan and Liwayway wet corn cob sourcing.","Maintain communication with SMCI for future food-grade corn requirements.","Continue client mapping for additional customers and suppliers."]}
 };
+function reportArchivePanel(n){
+  const no=String(n).padStart(3,"0");
+  return '<div class="report-section original-report-panel dynamic-report-archive" data-report-no="'+n+'">'+
+    '<div class="viewer-only dynamic-viewer-note" style="display:none;margin-bottom:10px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--pale);font-size:11px;color:var(--muted)">🔒 <b>Viewer access:</b> This report archive is read-only. Only the BD Admin can upload or replace reports and photos.</div>'+
+    '<h2>Original Report & Photo Documentation</h2>'+    '<p style="font-size:12px;line-height:1.5">The original <b>Weekly Report No. '+n+'</b> PDF and its photo documentation are stored in the secure report archive. <b>Admin</b> users can upload or replace the report, add photos, replace/delete photos, and manage captions. <b>Viewer</b> users can only open and view the stored report and photo captions.</p>'+    '<div class="original-report-tools">'+      '<label class="file-btn admin-only">📤 Upload / Replace Weekly Report No. '+n+' PDF<input id="archivePdfInput-'+n+'" type="file" accept="application/pdf"></label>'+      '<label class="file-btn admin-only">📷 Add Photos to Gallery<input id="archivePhotoInput-'+n+'" type="file" accept="image/*" multiple></label>'+      '<span id="archivePdfStatus-'+n+'" style="font-size:11px;color:var(--muted)">Checking report archive…</span>'+    '</div>'+    '<div id="archivePdfViewer-'+n+'" class="pdf-viewer"><div class="empty">The stored Weekly Report No. '+n+' PDF will appear here when available.</div></div>'+    '<div class="report-section"><h2>Photo Gallery</h2><div id="archiveGallery-'+n+'" class="photo-gallery"><div class="photo-placeholder">📷 No photos uploaded yet.</div></div></div>'+  '</div>';
+}
+
+async function ensureReportArchiveRow(n){
+  let {data:report,error}=await sb.from("bd_weekly_reports")
+    .select("id,report_number,original_file_path")
+    .eq("report_number",n).maybeSingle();
+  if(error)throw error;
+  if(report)return report;
+  const ins=await sb.from("bd_weekly_reports").insert({report_number:n,created_by:currentUser.id}).select("id,report_number,original_file_path").single();
+  if(ins.error)throw ins.error;
+  return ins.data;
+}
+
+async function loadReportArchive(n){
+  const status=$("archivePdfStatus-"+n), viewer=$("archivePdfViewer-"+n), gallery=$("archiveGallery-"+n);
+  if(!status||!viewer||!gallery)return;
+  try{
+    const {data:report,error}=await sb.from("bd_weekly_reports")
+      .select("id,report_number,original_file_path")
+      .eq("report_number",n).maybeSingle();
+    if(error)throw error;
+
+    if(report?.original_file_path){
+      const {data:urlData,error:urlError}=await sb.storage.from(REPORT_BUCKET).createSignedUrl(report.original_file_path,3600);
+      if(urlError)throw urlError;
+      status.textContent="Stored report available • Weekly Report No. "+n;
+      viewer.innerHTML=urlData?.signedUrl
+        ? '<iframe title="Original Weekly Report No. '+n+'" src="'+urlData.signedUrl+'"></iframe>'
+        : '<div class="empty">Unable to open the stored PDF.</div>';
+    }else{
+      status.textContent=isAdmin?"No PDF uploaded yet.":"No Weekly Report No. "+n+" PDF is currently available.";
+      viewer.innerHTML='<div class="empty">'+(isAdmin?"Upload the original Weekly Report No. "+n+" PDF above to store it permanently in the report archive.":"The Weekly Report No. "+n+" PDF has not yet been uploaded by the BD Admin.")+'</div>';
+    }
+
+    if(!report?.id){
+      gallery.innerHTML='<div class="photo-placeholder">📷 No photos uploaded yet.</div>';
+      return;
+    }
+    const {data:files,error:fileError}=await sb.from("bd_report_files")
+      .select("id,file_path,file_name,file_type,caption,created_at")
+      .eq("report_id",report.id).order("created_at",{ascending:true});
+    if(fileError)throw fileError;
+    const photos=(files||[]).filter(x=>(x.file_type||"").startsWith("image/"));
+    if(!photos.length){gallery.innerHTML='<div class="photo-placeholder">📷 No photos uploaded yet.</div>';return;}
+    gallery.innerHTML="";
+    for(const photo of photos){
+      const {data:urlData,error:urlError}=await sb.storage.from(REPORT_BUCKET).createSignedUrl(photo.file_path,3600);
+      if(urlError)continue;
+      const card=document.createElement("div"); card.className="photo-card"; card.dataset.photoId=photo.id; card.dataset.filePath=photo.file_path; card.dataset.reportNo=n;
+      const img=document.createElement("img"); img.className="photo-card-image"; img.src=urlData.signedUrl; img.alt="Weekly Report "+n+" Photo"; card.appendChild(img);
+      if(isAdmin){
+        const actions=document.createElement("div"); actions.className="photo-card-actions";
+        const replaceBtn=document.createElement("button"); replaceBtn.type="button"; replaceBtn.className="photo-replace"; replaceBtn.title="Replace photo"; replaceBtn.setAttribute("aria-label","Replace photo"); replaceBtn.textContent="↻";
+        const replaceInput=document.createElement("input"); replaceInput.type="file"; replaceInput.accept="image/jpeg,image/png,image/webp"; replaceInput.className="photo-replace-input";
+        const deleteBtn=document.createElement("button"); deleteBtn.type="button"; deleteBtn.className="photo-delete"; deleteBtn.title="Delete photo"; deleteBtn.setAttribute("aria-label","Delete photo"); deleteBtn.textContent="🗑";
+        actions.append(replaceBtn,replaceInput,deleteBtn); card.appendChild(actions);
+        replaceBtn.addEventListener("click",()=>replaceInput.click());
+        replaceInput.addEventListener("change",e=>replaceReportPhoto(n,photo,e.target.files?.[0]));
+        deleteBtn.addEventListener("click",()=>deleteReportPhoto(n,photo));
+      }
+      const body=document.createElement("div"); body.className="photo-card-body";
+      if(isAdmin){
+        const caption=document.createElement("textarea"); caption.className="photo-caption"; caption.maxLength=150; caption.placeholder="Enter a caption for this photo..."; caption.value=photo.caption||""; caption.dataset.original=photo.caption||"";
+        const row=document.createElement("div"); row.className="photo-caption-row";
+        const count=document.createElement("span"); count.className="photo-caption-count"; count.textContent=caption.value.length+"/150";
+        const save=document.createElement("button"); save.type="button"; save.className="photo-save-caption"; save.textContent="Save Caption"; save.disabled=true;
+        caption.addEventListener("input",()=>{count.textContent=caption.value.length+"/150";save.disabled=caption.value===caption.dataset.original;});
+        save.addEventListener("click",()=>saveReportPhotoCaption(photo,caption,save,n));
+        row.append(count,save); body.append(caption,row);
+      }else{
+        const caption=document.createElement("div"); caption.className="photo-viewer-caption"; const text=(photo.caption||"").trim(); caption.textContent=text||"No caption added."; if(!text)caption.classList.add("empty-caption"); body.appendChild(caption);
+      }
+      card.appendChild(body); gallery.appendChild(card);
+    }
+  }catch(err){
+    console.error("Unable to load weekly report archive:",err);
+    status.textContent="Unable to load report archive.";
+    viewer.innerHTML='<div class="empty">The report archive could not be loaded. Please refresh and try again.</div>';
+    gallery.innerHTML='<div class="photo-placeholder">📷 Unable to load photos.</div>';
+  }
+}
+
+async function saveReportPhotoCaption(photo,captionInput,saveButton,n){
+  if(!isAdmin)return alert("Viewer accounts cannot edit photo captions.");
+  const caption=captionInput.value.trim().slice(0,150); saveButton.disabled=true; saveButton.textContent="Saving…";
+  try{
+    const {error}=await sb.from("bd_report_files").update({caption}).eq("id",photo.id); if(error)throw error;
+    captionInput.dataset.original=caption; captionInput.value=caption; saveButton.textContent="Saved"; setTimeout(()=>{saveButton.textContent="Save Caption";},1200);
+  }catch(err){console.error(err);saveButton.disabled=false;saveButton.textContent="Save Caption";alert("Unable to save the photo caption: "+(err.message||"Unknown error"));}
+}
+
+async function deleteReportPhoto(n,photo){
+  if(!isAdmin)return alert("Viewer accounts cannot delete report photos.");
+  if(!confirm("Delete this photo from Weekly Report No. "+n+"? This cannot be undone."))return;
+  try{
+    const {error:dbError}=await sb.from("bd_report_files").delete().eq("id",photo.id); if(dbError)throw dbError;
+    const {error:storageError}=await sb.storage.from(REPORT_BUCKET).remove([photo.file_path]);
+    await loadReportArchive(n);
+    $("archivePdfStatus-"+n).textContent=storageError?"Photo deleted. Storage cleanup may need review.":"Photo deleted from the gallery.";
+  }catch(err){console.error(err);alert("Unable to delete the photo: "+(err.message||"Unknown error"));}
+}
+
+async function replaceReportPhoto(n,photo,file){
+  if(!isAdmin||!file)return;
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type))return alert("Only JPG, PNG, and WebP images are allowed.");
+  if(file.size>50*1024*1024)return alert("The photo must be 50 MB or smaller.");
+  const status=$("archivePdfStatus-"+n); status.textContent="Replacing photo…";
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"); const no=String(n).padStart(3,"0"); const newPath="weekly-reports/"+no+"/photos/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safeName;
+  try{
+    const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(newPath,file,{contentType:file.type,upsert:false}); if(uploadError)throw uploadError;
+    const {error:updateError}=await sb.from("bd_report_files").update({file_path:newPath,file_name:file.name,file_type:file.type}).eq("id",photo.id);
+    if(updateError){await sb.storage.from(REPORT_BUCKET).remove([newPath]);throw updateError;}
+    const {error:cleanupError}=await sb.storage.from(REPORT_BUCKET).remove([photo.file_path]); if(cleanupError)console.warn("New photo saved, but old storage file could not be removed:",cleanupError);
+    await loadReportArchive(n); status.textContent="Photo replaced successfully.";
+  }catch(err){console.error(err);status.textContent="Photo replacement failed.";alert("Unable to replace the photo: "+(err.message||"Unknown error"));}
+}
+
+function bindReportArchiveControls(n){
+  const pdfInput=$("archivePdfInput-"+n), photoInput=$("archivePhotoInput-"+n); if(!pdfInput||!photoInput)return;
+  pdfInput.addEventListener("change",async e=>{
+    if(!isAdmin){e.target.value="";return alert("Viewer accounts cannot upload weekly reports.");}
+    const file=e.target.files?.[0]; if(!file)return;
+    if(file.type!=="application/pdf")return alert("Please select a PDF file.");
+    if(file.size>50*1024*1024)return alert("The PDF must be 50 MB or smaller.");
+    const no=String(n).padStart(3,"0"),safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path="weekly-reports/"+no+"/"+Date.now()+"-"+safeName,status=$("archivePdfStatus-"+n); status.textContent="Uploading "+file.name+"…";
+    try{
+      const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(path,file,{contentType:"application/pdf",upsert:false}); if(uploadError)throw uploadError;
+      const report=await ensureReportArchiveRow(n);
+      const {error:updateError}=await sb.from("bd_weekly_reports").update({original_file_path:path,created_by:currentUser.id}).eq("id",report.id); if(updateError){await sb.storage.from(REPORT_BUCKET).remove([path]);throw updateError;}
+      await loadReportArchive(n); status.textContent="Upload complete • "+file.name; alert("Weekly Report No. "+n+" PDF uploaded and stored permanently.");
+    }catch(err){console.error(err);status.textContent="Upload failed.";alert("Unable to upload Weekly Report No. "+n+" PDF: "+(err.message||"Unknown error"));}
+    finally{e.target.value="";}
+  });
+  photoInput.addEventListener("change",async e=>{
+    if(!isAdmin){e.target.value="";return alert("Viewer accounts cannot upload report photos.");}
+    const files=Array.from(e.target.files||[]); if(!files.length)return;
+    const imageFiles=files.filter(f=>["image/jpeg","image/png","image/webp"].includes(f.type)); if(imageFiles.length!==files.length)return alert("Only JPG, PNG, and WebP images are allowed.");
+    const status=$("archivePdfStatus-"+n); status.textContent="Uploading report photos…";
+    try{
+      const report=await ensureReportArchiveRow(n); const no=String(n).padStart(3,"0");
+      for(const file of imageFiles){
+        if(file.size>50*1024*1024)throw new Error(file.name+" is larger than 50 MB.");
+        const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path="weekly-reports/"+no+"/photos/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safeName;
+        const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(path,file,{contentType:file.type,upsert:false}); if(uploadError)throw uploadError;
+        const {error:insertError}=await sb.from("bd_report_files").insert({report_id:report.id,file_path:path,file_name:file.name,file_type:file.type,caption:""});
+        if(insertError){await sb.storage.from(REPORT_BUCKET).remove([path]);throw insertError;}
+      }
+      await loadReportArchive(n); status.textContent=imageFiles.length+" photo(s) uploaded successfully.";
+    }catch(err){console.error(err);status.textContent="Photo upload failed.";alert("Unable to upload report photos: "+(err.message||"Unknown error"));}
+    finally{e.target.value="";}
+  });
+}
+
 function renderWeeklyReport(n){
   const r=weeklyReports[n]; if(!r)return;
   const dyn=$("reportDynamicContent");
@@ -1026,8 +1184,10 @@ function renderWeeklyReport(n){
   const hi=r.highlights.map(x=>'<li>'+esc(x)+'</li>').join('');
   const rows=r.pipeline.map(x=>'<tr>'+x.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('');
   const ns=r.next.map(x=>'<li>'+esc(x)+'</li>').join('');
-  dyn.innerHTML='<div class="report-head"><div><h1 style="margin:0">Business Development Team Journey</h1><p style="margin:3px 0 0;color:var(--muted);font-size:12px">Weekly Report No. '+n+' • '+esc(r.week)+'</p><p style="margin:7px 0 0;font-size:12px">Prepared by Cathy Lyn B. Paraluman and Azelle J. Sulla • Stellar Seeds Corporation</p></div><span class="pill">Archived Report</span></div><div class="report-kpis">'+metrics+'</div><div class="report-section"><h2>Executive Summary</h2><p style="font-size:12px;line-height:1.55">'+esc(r.summary)+'</p></div><div class="report-section"><h2>Business Development Highlights</h2><ul style="font-size:12px;line-height:1.6;margin-top:5px">'+hi+'</ul></div><div class="report-section"><h2>Business Development Pipeline</h2><div class="table-wrap"><table class="table"><thead><tr><th>Company / Organization</th><th>Product / Commodity</th><th>Volume</th><th>Opportunity</th><th>Status</th><th>Next Action</th></tr></thead><tbody>'+rows+'</tbody></table></div></div><div class="report-section"><h2>Next Steps</h2><ul style="font-size:12px;line-height:1.6">'+ns+'</ul></div><div class="report-photo-note" style="margin-top:14px">📄 <b>Source report:</b> Weekly Report No. '+n+' uploaded to the Business Development project archive.</div>';
+  dyn.innerHTML='<div class="report-head"><div><h1 style="margin:0">Business Development Team Journey</h1><p style="margin:3px 0 0;color:var(--muted);font-size:12px">Weekly Report No. '+n+' • '+esc(r.week)+'</p><p style="margin:7px 0 0;font-size:12px">Prepared by Cathy Lyn B. Paraluman and Azelle J. Sulla • Stellar Seeds Corporation</p></div><span class="pill">Archived Report</span></div><div class="report-kpis">'+metrics+'</div><div class="report-section"><h2>Executive Summary</h2><p style="font-size:12px;line-height:1.55">'+esc(r.summary)+'</p></div><div class="report-section"><h2>Business Development Highlights</h2><ul style="font-size:12px;line-height:1.6;margin-top:5px">'+hi+'</ul></div><div class="report-section"><h2>Business Development Pipeline</h2><div class="table-wrap"><table class="table"><thead><tr><th>Company / Organization</th><th>Product / Commodity</th><th>Volume</th><th>Opportunity</th><th>Status</th><th>Next Action</th></tr></thead><tbody>'+rows+'</tbody></table></div></div><div class="report-section"><h2>Next Steps</h2><ul style="font-size:12px;line-height:1.6">'+ns+'</ul></div>'+reportArchivePanel(n);
   $("reportWeek1Content").style.display="none"; dyn.style.display="block";
+  const note=dyn.querySelector('.dynamic-viewer-note'); if(note&&!isAdmin)note.style.display='block';
+  bindReportArchiveControls(n); loadReportArchive(n);
 }
 function showArchivedReport(n){
   document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.classList.toggle("active",Number(b.dataset.reportNo)===Number(n)));
