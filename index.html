@@ -56,7 +56,7 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .admin-only{display:none!important}.admin-mode .admin-only{display:revert!important}.viewer-mode .admin-only{display:none!important}.viewer-mode .viewer-only{display:block!important}.viewer-mode .admin-only-panel{display:none!important}
 body:not(.ready)>.app{display:none!important}
 </style>
-<meta name="app-version" content="V15 - admin/viewer visibility fix"></head>
+<meta name="app-version" content="V16 - direct admin control visibility fix"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -201,10 +201,10 @@ body:not(.ready)>.app{display:none!important}
           <b>Admin</b> users can upload or replace the report and add photos. <b>Viewer</b> users can only open and view the stored report.
         </p>
         <div class="original-report-tools">
-          <label class="file-btn admin-only">📤 Upload / Replace Week 1 PDF
+          <label id="week1PdfUploadBtn" class="file-btn admin-only">📤 Upload / Replace Week 1 PDF
             <input id="week1PdfInput" type="file" accept="application/pdf">
           </label>
-          <label class="file-btn admin-only">📷 Add Photos to Gallery
+          <label id="week1PhotoUploadBtn" class="file-btn admin-only">📷 Add Photos to Gallery
             <input id="week1PhotoInput" type="file" accept="image/*" multiple>
           </label>
           <span id="pdfStatus" style="font-size:11px;color:var(--muted)">Checking report archive…</span>
@@ -353,6 +353,19 @@ async function loadCloudData(){
 function setAdminUI(){
   document.body.classList.toggle("admin-mode",isAdmin);
   document.body.classList.toggle("viewer-mode",!isAdmin);
+
+  // Apply the role directly to the Admin controls as well as the body class.
+  // This avoids CSS-cascade issues that can otherwise keep file labels hidden.
+  document.querySelectorAll(".admin-only").forEach(el=>{
+    el.style.setProperty("display",isAdmin ? "inline-flex" : "none","important");
+  });
+  document.querySelectorAll(".admin-only-panel").forEach(el=>{
+    el.style.setProperty("display",isAdmin ? "block" : "none","important");
+  });
+  document.querySelectorAll(".viewer-only").forEach(el=>{
+    el.style.setProperty("display",isAdmin ? "none" : "block","important");
+  });
+
   $("userRole").textContent=isAdmin?"ADMIN":"VIEWER";
   $("userRole").style.background=isAdmin?"#e9f7ef":"#f2f4f3";
   $("userName").textContent=currentProfile?.full_name||currentUser?.email?.split("@")[0]||"BD User";
