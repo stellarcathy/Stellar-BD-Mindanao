@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V12</title>
+<title>Stellar Seeds — Business Development Management System V13</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -53,7 +53,7 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .auth-card{width:min(430px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .auth-card .logo-box{background:#fff;border:1px solid #e4eee8;border-radius:10px;padding:10px;margin-bottom:18px;text-align:center}
 .auth-card .logo-box img{max-width:260px;width:100%;height:auto}.auth-card h1{font-size:21px;margin:12px 0 3px}.auth-card p{font-size:12px;color:#6b7d74;line-height:1.45}.auth-card label{display:block;font-size:11px;font-weight:750;margin:12px 0 5px}.auth-card input{width:100%;border:1px solid #d9e8df;border-radius:8px;padding:11px}.auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.auth-error{background:#fff2f2;color:#a12626;border:1px solid #f2c8c8;border-radius:8px;padding:9px;font-size:11px;margin-top:10px;display:none}.auth-note{font-size:10px;color:#6b7d74;margin-top:12px}.role-badge{font-size:9px;background:#e9f7ef;color:#08783f;padding:4px 7px;border-radius:20px;font-weight:800}
-.admin-only{display:none}.viewer-mode .admin-only{display:none!important}
+.admin-only{display:none}.viewer-mode .admin-only{display:none!important}.viewer-mode .viewer-only{display:block!important}
 body:not(.ready)>.app{display:none!important}
 </style>
 </head>
@@ -194,28 +194,28 @@ body:not(.ready)>.app{display:none!important}
       </div>
 
 
-      <div class="report-section original-report-panel">
+      <div class="report-section original-report-panel"><div class="viewer-only" style="display:none;margin-bottom:10px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--pale);font-size:11px;color:var(--muted)">🔒 <b>Viewer access:</b> This report archive is read-only. Only the BD Admin can upload or replace reports and photos.</div>
         <h2>Original Report & Photo Documentation</h2>
         <p style="font-size:12px;line-height:1.5">
-          This section lets you open the <b>actual Week 1 PDF</b> inside the app, preserving the original report pages and photographs.
-          Because Chrome does not allow a local HTML file to automatically read another file on your computer, select the original PDF once below.
+          The original <b>Week 1 PDF</b> and its photo documentation are stored in the secure report archive.
+          <b>Admin</b> users can upload or replace the report and add photos. <b>Viewer</b> users can only open and view the stored report.
         </p>
         <div class="original-report-tools">
-          <label class="file-btn">📄 Open Week 1 PDF
+          <label class="file-btn admin-only">📤 Upload / Replace Week 1 PDF
             <input id="week1PdfInput" type="file" accept="application/pdf">
           </label>
           <label class="file-btn admin-only">📷 Add Photos to Gallery
             <input id="week1PhotoInput" type="file" accept="image/*" multiple>
           </label>
-          <span id="pdfStatus" style="font-size:11px;color:var(--muted)">No PDF loaded yet.</span>
+          <span id="pdfStatus" style="font-size:11px;color:var(--muted)">Checking report archive…</span>
         </div>
         <div id="pdfViewer" class="pdf-viewer">
-          <div class="empty">Select your original <b>Business Development Team Journey #1.pdf</b> above. The complete report, including its photographs, will appear here.</div>
+          <div class="empty">The stored Week 1 PDF will appear here when available.</div>
         </div>
         <div class="report-section">
           <h2>Photo Gallery</h2>
           <div id="week1Gallery" class="photo-gallery">
-            <div class="photo-placeholder">📷 Your original visit photos can be added here. They will stay grouped under Weekly Report No. 001.</div>
+            <div class="photo-placeholder">📷 No photos uploaded yet.</div>
           </div>
         </div>
       </div>
@@ -363,6 +363,7 @@ async function startApp(user){
     isAdmin=currentProfile.role==="admin";
     setAdminUI();
     await loadCloudData();
+    await loadWeek1Archive();
     document.body.classList.remove("not-ready");document.body.classList.add("ready");
     $("authGate").style.display="none";
     initMap();render();
@@ -443,20 +444,142 @@ async function boot(){
 }
 boot();
 
-// Week 1 local preview: PDF/photo inputs remain, while permanent Storage upload is the next storage step.
-$("week1PdfInput").addEventListener("change", e=>{
-  const file=e.target.files && e.target.files[0]; if(!file)return;
-  const url=URL.createObjectURL(file);$("pdfStatus").textContent=file.name+" • "+Math.round(file.size/1024)+" KB";
-  $("pdfViewer").innerHTML='<iframe title="Original Weekly Report No. 001" src="'+url+'"></iframe>';
+// Secure Weekly Report No. 001 archive.
+// Admins can upload/replace the PDF and add photos. Viewers can only read stored files.
+const REPORT_BUCKET="bd-reports";
+const WEEK1_REPORT_ID="20928380-9549-419b-a38e-d9af7b9576cf";
+
+async function loadWeek1Archive(){
+  try{
+    const {data:report,error}=await sb.from("bd_weekly_reports")
+      .select("id,report_number,original_file_path")
+      .eq("id",WEEK1_REPORT_ID).maybeSingle();
+    if(error) throw error;
+
+    if(report?.original_file_path){
+      const {data:urlData,error:urlError}=await sb.storage.from(REPORT_BUCKET)
+        .createSignedUrl(report.original_file_path,3600);
+      if(urlError) throw urlError;
+      if(urlData?.signedUrl){
+        $("pdfStatus").textContent="Stored report available • Week 1 PDF";
+        $("pdfViewer").innerHTML='<iframe title="Original Weekly Report No. 001" src="'+urlData.signedUrl+'"></iframe>';
+      }
+    }else{
+      $("pdfStatus").textContent=isAdmin?"No PDF uploaded yet.":"No Week 1 PDF is currently available.";
+      $("pdfViewer").innerHTML='<div class="empty">'+
+        (isAdmin?"Upload the original Week 1 PDF above to store it permanently in the report archive.":"The Week 1 PDF has not yet been uploaded by the BD Admin.")+
+        '</div>';
+    }
+
+    const {data:files,error:fileError}=await sb.from("bd_report_files")
+      .select("id,file_path,file_name,file_type,caption,created_at")
+      .eq("report_id",WEEK1_REPORT_ID)
+      .order("created_at",{ascending:true});
+    if(fileError) throw fileError;
+
+    const photos=(files||[]).filter(x=>(x.file_type||"").startsWith("image/"));
+    const gallery=$("week1Gallery");
+    if(!photos.length){
+      gallery.innerHTML='<div class="photo-placeholder">📷 No photos uploaded yet.</div>';
+      return;
+    }
+
+    gallery.innerHTML="";
+    for(const photo of photos){
+      const {data:urlData,error:urlError}=await sb.storage.from(REPORT_BUCKET)
+        .createSignedUrl(photo.file_path,3600);
+      if(urlError||!urlData?.signedUrl) continue;
+      const card=document.createElement("div");
+      card.className="photo-placeholder";
+      card.style.padding="0";
+      card.style.overflow="hidden";
+      card.innerHTML='<img src="'+urlData.signedUrl+'" alt="'+(photo.file_name||"Report photo")+'" style="width:100%;height:210px;object-fit:cover;display:block"><div style="padding:8px;text-align:left;background:#fff;color:#16352a;font-size:10px">'+(photo.caption||photo.file_name||"Report photo")+'</div>';
+      gallery.appendChild(card);
+    }
+  }catch(err){
+    console.error("Unable to load weekly report archive:",err);
+    $("pdfStatus").textContent="Unable to load report archive.";
+    $("pdfViewer").innerHTML='<div class="empty">The report archive could not be loaded. Please refresh and try again.</div>';
+  }
+}
+
+$("week1PdfInput").addEventListener("change",async e=>{
+  if(!isAdmin){e.target.value="";return alert("Viewer accounts cannot upload weekly reports.");}
+  const file=e.target.files && e.target.files[0];
+  if(!file)return;
+  if(file.type!=="application/pdf")return alert("Please select a PDF file.");
+  if(file.size>50*1024*1024)return alert("The PDF must be 50 MB or smaller.");
+
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const path="weekly-reports/001/"+Date.now()+"-"+safeName;
+  $("pdfStatus").textContent="Uploading "+file.name+"…";
+
+  try{
+    const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(path,file,{
+      contentType:"application/pdf",
+      upsert:false
+    });
+    if(uploadError)throw uploadError;
+
+    const {error:updateError}=await sb.from("bd_weekly_reports")
+      .update({original_file_path:path,created_by:currentUser.id})
+      .eq("id",WEEK1_REPORT_ID);
+    if(updateError)throw updateError;
+
+    $("pdfStatus").textContent="Upload complete • "+file.name;
+    await loadWeek1Archive();
+    alert("Week 1 PDF uploaded and stored permanently.");
+  }catch(err){
+    console.error(err);
+    $("pdfStatus").textContent="Upload failed.";
+    alert("Unable to upload the Week 1 PDF: "+(err.message||"Unknown error"));
+  }finally{
+    e.target.value="";
+  }
 });
-$("week1PhotoInput").addEventListener("change", e=>{
-  const files=Array.from(e.target.files||[]);if(!files.length)return;
-  const gallery=$("week1Gallery");gallery.innerHTML="";
-  files.forEach(file=>{const url=URL.createObjectURL(file),card=document.createElement("div");
-    card.className="photo-placeholder";card.style.padding="0";card.style.overflow="hidden";
-    card.innerHTML='<img src="'+url+'" alt="'+file.name+'" style="width:100%;height:210px;object-fit:cover;display:block"><div style="padding:8px;text-align:left;background:#fff;color:#16352a;font-size:10px">'+file.name+'</div>';
-    gallery.appendChild(card);
-  });
+
+$("week1PhotoInput").addEventListener("change",async e=>{
+  if(!isAdmin){e.target.value="";return alert("Viewer accounts cannot upload report photos.");}
+  const files=Array.from(e.target.files||[]);
+  if(!files.length)return;
+
+  const imageFiles=files.filter(f=>["image/jpeg","image/png","image/webp"].includes(f.type));
+  if(imageFiles.length!==files.length)return alert("Only JPG, PNG, and WebP images are allowed.");
+
+  const gallery=$("week1Gallery");
+  $("pdfStatus").textContent="Uploading report photos…";
+
+  try{
+    for(const file of imageFiles){
+      if(file.size>50*1024*1024)throw new Error(file.name+" is larger than 50 MB.");
+      const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+      const path="weekly-reports/001/photos/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safeName;
+
+      const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(path,file,{
+        contentType:file.type,
+        upsert:false
+      });
+      if(uploadError)throw uploadError;
+
+      const {error:insertError}=await sb.from("bd_report_files").insert({
+        report_id:WEEK1_REPORT_ID,
+        file_path:path,
+        file_name:file.name,
+        file_type:file.type,
+        created_by:currentUser.id
+      });
+      if(insertError)throw insertError;
+    }
+
+    await loadWeek1Archive();
+    alert(imageFiles.length+" report photo"+(imageFiles.length>1?"s":"")+" uploaded successfully.");
+  }catch(err){
+    console.error(err);
+    $("pdfStatus").textContent="Photo upload failed.";
+    alert("Unable to upload report photos: "+(err.message||"Unknown error"));
+  }finally{
+    e.target.value="";
+  }
 });
 
 </script>
