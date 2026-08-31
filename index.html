@@ -44,8 +44,24 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .file-btn input{display:none}
 .pdf-viewer{margin-top:11px;height:720px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#eef5f1}
 .pdf-viewer iframe{width:100%;height:100%;border:0}
-.photo-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.photo-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
 .photo-gallery .photo-placeholder{border:1px dashed #b8cfc3;border-radius:10px;padding:18px;text-align:center;color:var(--muted);font-size:11px;background:#f8fcfa}
+.photo-card{position:relative;border:1px solid #dcebe3;border-radius:11px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(19,65,45,.06)}
+.photo-card-image{width:100%;height:210px;object-fit:cover;display:block;background:#eef5f1}
+.photo-card-actions{position:absolute;top:8px;right:8px;display:flex;gap:5px}
+.photo-card-actions button{width:32px;height:32px;border:1px solid rgba(255,255,255,.85);border-radius:7px;background:rgba(255,255,255,.95);cursor:pointer;font-size:15px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
+.photo-card-actions .photo-delete{color:#b42318}
+.photo-card-actions .photo-replace{color:#08783f}
+.photo-card-body{padding:9px;background:#fff}
+.photo-caption{width:100%;min-height:58px;resize:vertical;border:1px solid #d9e8df;border-radius:7px;padding:8px;font:inherit;font-size:11px;color:#16352a;box-sizing:border-box}
+.photo-caption:focus{outline:none;border-color:#0b9b52;box-shadow:0 0 0 2px rgba(11,155,82,.08)}
+.photo-caption-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:5px}
+.photo-caption-count{font-size:10px;color:var(--muted)}
+.photo-save-caption{border:1px solid #b8cfc3;background:#f8fcfa;color:#08783f;border-radius:7px;padding:5px 8px;font-size:10px;font-weight:750;cursor:pointer}
+.photo-save-caption:disabled{opacity:.55;cursor:default}
+.photo-replace-input{display:none}
+.photo-viewer-caption{padding:9px;text-align:left;background:#fff;color:#16352a;font-size:11px;line-height:1.4;min-height:38px}
+.photo-viewer-caption.empty-caption{color:#8a9b93;font-style:italic}
 @media(max-width:900px){.photo-gallery{grid-template-columns:repeat(2,1fr)}.pdf-viewer{height:600px}}
 @media(max-width:600px){.photo-gallery{grid-template-columns:1fr}.pdf-viewer{height:500px}}
 
@@ -198,7 +214,7 @@ body:not(.ready)>.app{display:none!important}
         <h2>Original Report & Photo Documentation</h2>
         <p style="font-size:12px;line-height:1.5">
           The original <b>Week 1 PDF</b> and its photo documentation are stored in the secure report archive.
-          <b>Admin</b> users can upload or replace the report and add photos. <b>Viewer</b> users can only open and view the stored report.
+          <b>Admin</b> users can upload or replace the report, add photos, replace/delete photos, and manage captions. <b>Viewer</b> users can only open and view the stored report and photo captions.
         </p>
         <div class="original-report-tools">
           <label id="week1PdfUploadBtn" class="file-btn admin-only">📤 Upload / Replace Week 1 PDF
@@ -509,17 +525,193 @@ async function loadWeek1Archive(){
       const {data:urlData,error:urlError}=await sb.storage.from(REPORT_BUCKET)
         .createSignedUrl(photo.file_path,3600);
       if(urlError||!urlData?.signedUrl) continue;
+
       const card=document.createElement("div");
-      card.className="photo-placeholder";
-      card.style.padding="0";
-      card.style.overflow="hidden";
-      card.innerHTML='<img src="'+urlData.signedUrl+'" alt="'+(photo.file_name||"Report photo")+'" style="width:100%;height:210px;object-fit:cover;display:block"><div style="padding:8px;text-align:left;background:#fff;color:#16352a;font-size:10px">'+(photo.caption||photo.file_name||"Report photo")+'</div>';
+      card.className="photo-card";
+      card.dataset.photoId=photo.id;
+      card.dataset.filePath=photo.file_path;
+
+      const img=document.createElement("img");
+      img.className="photo-card-image";
+      img.src=urlData.signedUrl;
+      img.alt="Weekly Report Photo";
+      card.appendChild(img);
+
+      if(isAdmin){
+        const actions=document.createElement("div");
+        actions.className="photo-card-actions";
+
+        const replaceBtn=document.createElement("button");
+        replaceBtn.type="button";
+        replaceBtn.className="photo-replace";
+        replaceBtn.title="Replace photo";
+        replaceBtn.setAttribute("aria-label","Replace photo");
+        replaceBtn.textContent="↻";
+
+        const replaceInput=document.createElement("input");
+        replaceInput.type="file";
+        replaceInput.accept="image/jpeg,image/png,image/webp";
+        replaceInput.className="photo-replace-input";
+        replaceInput.dataset.photoId=photo.id;
+
+        const deleteBtn=document.createElement("button");
+        deleteBtn.type="button";
+        deleteBtn.className="photo-delete";
+        deleteBtn.title="Delete photo";
+        deleteBtn.setAttribute("aria-label","Delete photo");
+        deleteBtn.textContent="🗑";
+
+        actions.appendChild(replaceBtn);
+        actions.appendChild(replaceInput);
+        actions.appendChild(deleteBtn);
+        card.appendChild(actions);
+
+        replaceBtn.addEventListener("click",()=>replaceInput.click());
+        replaceInput.addEventListener("change",e=>replaceWeek1Photo(photo,e.target.files?.[0]));
+        deleteBtn.addEventListener("click",()=>deleteWeek1Photo(photo));
+      }
+
+      const body=document.createElement("div");
+      body.className="photo-card-body";
+
+      if(isAdmin){
+        const caption=document.createElement("textarea");
+        caption.className="photo-caption";
+        caption.maxLength=150;
+        caption.placeholder="Enter a caption for this photo...";
+        caption.value=photo.caption||"";
+        caption.dataset.original=photo.caption||"";
+
+        const row=document.createElement("div");
+        row.className="photo-caption-row";
+
+        const count=document.createElement("span");
+        count.className="photo-caption-count";
+        count.textContent=(caption.value.length)+"/150";
+
+        const save=document.createElement("button");
+        save.type="button";
+        save.className="photo-save-caption";
+        save.textContent="Save Caption";
+        save.disabled=true;
+
+        caption.addEventListener("input",()=>{
+          count.textContent=caption.value.length+"/150";
+          save.disabled=caption.value===caption.dataset.original;
+        });
+        save.addEventListener("click",()=>saveWeek1PhotoCaption(photo,caption,save));
+
+        row.appendChild(count);
+        row.appendChild(save);
+        body.appendChild(caption);
+        body.appendChild(row);
+      }else{
+        const caption=document.createElement("div");
+        caption.className="photo-viewer-caption";
+        const text=(photo.caption||"").trim();
+        if(text){
+          caption.textContent=text;
+        }else{
+          caption.textContent="No caption added.";
+          caption.classList.add("empty-caption");
+        }
+        body.appendChild(caption);
+      }
+
+      card.appendChild(body);
       gallery.appendChild(card);
     }
   }catch(err){
     console.error("Unable to load weekly report archive:",err);
     $("pdfStatus").textContent="Unable to load report archive.";
     $("pdfViewer").innerHTML='<div class="empty">The report archive could not be loaded. Please refresh and try again.</div>';
+  }
+}
+
+async function saveWeek1PhotoCaption(photo,captionInput,saveButton){
+  if(!isAdmin)return alert("Viewer accounts cannot edit photo captions.");
+  const caption=captionInput.value.trim().slice(0,150);
+  saveButton.disabled=true;
+  saveButton.textContent="Saving…";
+  try{
+    const {error}=await sb.from("bd_report_files")
+      .update({caption})
+      .eq("id",photo.id);
+    if(error)throw error;
+    captionInput.dataset.original=caption;
+    captionInput.value=caption;
+    saveButton.textContent="Saved";
+    setTimeout(()=>{saveButton.textContent="Save Caption";},1200);
+  }catch(err){
+    console.error(err);
+    saveButton.disabled=false;
+    saveButton.textContent="Save Caption";
+    alert("Unable to save the photo caption: "+(err.message||"Unknown error"));
+  }
+}
+
+async function deleteWeek1Photo(photo){
+  if(!isAdmin)return alert("Viewer accounts cannot delete report photos.");
+  if(!confirm("Delete this photo from the Week 1 gallery? This cannot be undone."))return;
+
+  try{
+    const {error:dbError}=await sb.from("bd_report_files")
+      .delete()
+      .eq("id",photo.id);
+    if(dbError)throw dbError;
+
+    const {error:storageError}=await sb.storage.from(REPORT_BUCKET)
+      .remove([photo.file_path]);
+    if(storageError){
+      console.warn("Photo record deleted, but storage cleanup failed:",storageError);
+    }
+
+    await loadWeek1Archive();
+    $("pdfStatus").textContent=storageError
+      ?"Photo deleted. Storage cleanup may need review."
+      :"Photo deleted from the gallery.";
+  }catch(err){
+    console.error(err);
+    alert("Unable to delete the photo: "+(err.message||"Unknown error"));
+  }
+}
+
+async function replaceWeek1Photo(photo,file){
+  if(!isAdmin)return;
+  if(!file)return;
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){
+    return alert("Only JPG, PNG, and WebP images are allowed.");
+  }
+  if(file.size>50*1024*1024)return alert("The photo must be 50 MB or smaller.");
+
+  $("pdfStatus").textContent="Replacing photo…";
+  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const newPath="weekly-reports/001/photos/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safeName;
+
+  try{
+    const {error:uploadError}=await sb.storage.from(REPORT_BUCKET).upload(newPath,file,{
+      contentType:file.type,
+      upsert:false
+    });
+    if(uploadError)throw uploadError;
+
+    const {error:updateError}=await sb.from("bd_report_files")
+      .update({file_path:newPath,file_name:file.name,file_type:file.type})
+      .eq("id",photo.id);
+    if(updateError){
+      await sb.storage.from(REPORT_BUCKET).remove([newPath]);
+      throw updateError;
+    }
+
+    const {error:cleanupError}=await sb.storage.from(REPORT_BUCKET).remove([photo.file_path]);
+    if(cleanupError)console.warn("New photo saved, but old storage file could not be removed:",cleanupError);
+
+    await loadWeek1Archive();
+    $("pdfStatus").textContent="Photo replaced successfully.";
+  }catch(err){
+    console.error(err);
+    $("pdfStatus").textContent="Photo replacement failed.";
+    alert("Unable to replace the photo: "+(err.message||"Unknown error"));
   }
 }
 
