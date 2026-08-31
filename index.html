@@ -26,8 +26,17 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .bd-map .leaflet-tile{max-width:none!important}
 .bd-map .leaflet-control-zoom a{color:#16352a}
 
-.report-archive{display:grid;grid-template-columns:250px minmax(0,1fr);gap:13px}
-.report-list{display:grid;gap:8px;align-content:start}
+.report-archive{display:flex;flex-direction:column;gap:13px}
+.report-archive>.panel{order:1}
+.report-archive>.report-list{order:2}
+.report-list{display:block;align-content:start}
+.archive-panel{padding:0!important;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff}
+.archive-toggle{width:100%;border:0;background:var(--green);color:#fff;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:800;letter-spacing:.2px;cursor:pointer;text-align:left}
+.archive-toggle:hover{background:var(--green2)}
+.archive-toggle .archive-arrow{font-size:16px;transition:transform .2s ease}
+.archive-toggle.open .archive-arrow{transform:rotate(180deg)}
+.archive-content{padding:12px;display:none}
+.archive-content.open{display:block}
 .report-item{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px;text-align:left}
 .report-item.active{border-color:var(--green2);box-shadow:0 0 0 2px rgba(11,155,82,.08)}
 .report-item b{display:block;color:var(--ink);font-size:13px}.report-item span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
@@ -141,8 +150,11 @@ body:not(.ready)>.app{display:none!important}
 <section id="reports" class="view">
   <div class="report-archive">
     <div class="report-list">
-      <div class="panel" style="padding:12px">
-        <div class="panel-title">WEEKLY REPORT ARCHIVE</div>
+      <div class="panel archive-panel">
+        <button type="button" class="archive-toggle" id="archiveToggle" aria-expanded="false" aria-controls="weeklyReportArchiveContent">
+          <span>WEEKLY REPORT ARCHIVE</span><span class="archive-arrow">▼</span>
+        </button>
+        <div class="archive-content" id="weeklyReportArchiveContent">
         <div id="weeklyReportArchiveList">
           <button type="button" class="report-item active" data-report-no="1">
             <b>Weekly Report No. 001</b><span>Week 25 • June 18–19, 2026</span><span>10 company visits</span>
@@ -160,6 +172,7 @@ body:not(.ready)>.app{display:none!important}
         <div class="report-photo-note" style="margin-top:9px">
           📚 <b>Weekly report archive</b><br>
           Reports 001–010 are now available in the archive. Select a report to view its weekly summary, key accomplishments, pipeline highlights, and next actions.
+        </div>
         </div>
       </div></div>
     </div>
@@ -1020,6 +1033,14 @@ function renderWeeklyReport(n){
 function showArchivedReport(n){
   document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.classList.toggle("active",Number(b.dataset.reportNo)===Number(n)));
   if(Number(n)===1){$("reportWeek1Content").style.display="block";$("reportDynamicContent").style.display="none";}else{renderWeeklyReport(Number(n));}
+}
+const archiveToggle=$("archiveToggle"), archiveContent=$("weeklyReportArchiveContent");
+if(archiveToggle && archiveContent){
+  archiveToggle.addEventListener("click",()=>{
+    const open=archiveContent.classList.toggle("open");
+    archiveToggle.classList.toggle("open",open);
+    archiveToggle.setAttribute("aria-expanded",open?"true":"false");
+  });
 }
 document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.addEventListener("click",()=>showArchivedReport(b.dataset.reportNo)));
 </script>
