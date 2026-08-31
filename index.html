@@ -56,7 +56,7 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .admin-only{display:none}.viewer-mode .admin-only{display:none!important}.viewer-mode .viewer-only{display:block!important}
 body:not(.ready)>.app{display:none!important}
 </style>
-</head>
+<meta name="app-version" content="V14 - report renderer fix"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -276,8 +276,15 @@ $("companyCards").innerHTML=companies.map(x=>'<div class="opcard"><h3>'+x.name+'
 $("activityList").innerHTML=activities.slice().reverse().map(x=>'<div style="border-bottom:1px solid #d9e8df;padding:10px 2px"><b>'+x.org+'</b><div style="font-size:11px;color:#6b7d74">'+x.date+' • '+x.type+' • '+x.status+'</div><div style="font-size:12px;margin-top:3px">'+x.result+'</div><div style="font-size:11px;color:#08783f;margin-top:3px">Next: '+x.next+'</div></div>').join("");
 $("followupList").innerHTML=companies.filter(x=>!["Closed Deal","Trial Completed"].includes(x.status)).map(x=>'<div style="border-bottom:1px solid #d9e8df;padding:10px"><b>'+x.name+'</b> <span class="pill">'+x.status+'</span><div style="font-size:12px;color:#6b7d74;margin-top:4px">'+x.next+'</div></div>').join("");
 $("dashCards").innerHTML=companies.slice(0,6).map(x=>'<div class="opcard"><h3>'+x.name+'</h3><p>'+x.commodity+' • '+x.volume+'</p><span class="pill">'+x.status+'</span><p style="margin-top:8px">'+x.next+'</p></div>').join("");
-refreshMap();generateReport()}
-function generateReport(){let closed=companies.filter(x=>x.status==="Closed Deal"),leads=companies.filter(x=>x.status==="New Lead"),active=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing"].includes(x.status));$("reportContent").innerHTML='<h2>Executive Summary</h2><p>This weekly report is generated from the Business Development activities and pipeline records entered in the system. The current focus is strengthening the corn sourcing network, developing customer partnerships, and advancing supplier and cooperative opportunities.</p><h2>Week in Numbers</h2><ul><li>Recorded activities: '+activities.length+'</li><li>Pipeline opportunities: '+companies.length+'</li><li>New leads: '+leads.length+'</li><li>Active / ongoing opportunities: '+active.length+'</li><li>Closed deals: '+closed.length+'</li></ul><h2>Business Development Highlights</h2><ul>'+activities.slice(0,6).map(x=>'<li><b>'+x.org+'</b> — '+x.result+'</li>').join("")+'</ul><h2>Pipeline Status</h2><div class="table-wrap"><table class="table"><thead><tr><th>Company</th><th>Commodity</th><th>Volume</th><th>Status</th><th>Next Action</th></tr></thead><tbody>'+companies.map(x=>'<tr><td>'+x.name+'</td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.status+'</td><td>'+x.next+'</td></tr>').join("")+'</tbody></table></div><h2>Next Steps</h2><ul>'+companies.filter(x=>!["Closed Deal","Trial Completed"].includes(x.status)).map(x=>'<li>'+x.next+' — <b>'+x.name+'</b></li>').join("")+'</ul>'}
+refreshMap()}
+function generateReport(){
+  const reportContent = $("reportContent");
+  if(!reportContent) return;
+  const closed=companies.filter(x=>x.status==="Closed Deal");
+  const leads=companies.filter(x=>x.status==="New Lead");
+  const active=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing"].includes(x.status));
+  reportContent.innerHTML='<h2>Executive Summary</h2><p>This weekly report is generated from the Business Development activities and pipeline records entered in the system. The current focus is strengthening the corn sourcing network, developing customer partnerships, and advancing supplier and cooperative opportunities.</p><h2>Week in Numbers</h2><ul><li>Recorded activities: '+activities.length+'</li><li>Pipeline opportunities: '+companies.length+'</li><li>New leads: '+leads.length+'</li><li>Active / ongoing opportunities: '+active.length+'</li><li>Closed deals: '+closed.length+'</li></ul><h2>Business Development Highlights</h2><ul>'+activities.slice(0,6).map(x=>'<li><b>'+x.org+'</b> — '+x.result+'</li>').join("")+'</ul><h2>Pipeline Status</h2><div class="table-wrap"><table class="table"><thead><tr><th>Company</th><th>Commodity</th><th>Volume</th><th>Status</th><th>Next Action</th></tr></thead><tbody>'+companies.map(x=>'<tr><td>'+x.name+'</td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.status+'</td><td>'+x.next+'</td></tr>').join("")+'</tbody></table></div><h2>Next Steps</h2><ul>'+companies.filter(x=>!["Closed Deal","Trial Completed"].includes(x.status)).map(x=>'<li>'+x.next+' — <b>'+x.name+'</b></li>').join("")+'</ul>';
+}
 function initMap(){
   if(map) return;
   map=L.map("bdMap",{
