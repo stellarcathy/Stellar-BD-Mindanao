@@ -32,10 +32,10 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .archive-panel{padding:0!important;overflow:hidden;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.08);box-shadow:none}
 .archive-toggle{width:100%;border:0;background:transparent;color:#fff;padding:10px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;letter-spacing:.2px;cursor:pointer;text-align:left}
 .archive-toggle:hover{background:rgba(11,155,82,.45)}
+.archive-heading{width:100%;padding:10px 10px;color:#fff;font-size:12px;font-weight:800;letter-spacing:.2px;text-align:left}
 .archive-toggle .archive-arrow{font-size:12px;transition:transform .2s ease}
 .archive-toggle.open .archive-arrow{transform:rotate(180deg)}
-.archive-content{padding:7px;display:none;max-height:330px;overflow-y:auto}
-.archive-content.open{display:block}
+.archive-content{padding:7px;display:block;max-height:calc(100vh - 330px);overflow-y:auto}
 .report-item{width:100%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:9px;text-align:left;margin-bottom:6px}
 .report-item:hover{background:rgba(11,155,82,.55)}
 .report-item.active{border-color:var(--green2);box-shadow:0 0 0 2px rgba(11,155,82,.08)}
@@ -125,9 +125,7 @@ body:not(.ready)>.app{display:none!important}
 </nav>
 <div class="sidebar-report-archive" id="sidebarReportArchive">
   <div class="archive-panel">
-    <button type="button" class="archive-toggle" id="archiveToggle" aria-expanded="false" aria-controls="weeklyReportArchiveContent">
-      <span>▤ WEEKLY REPORT ARCHIVE</span><span class="archive-arrow">▼</span>
-    </button>
+    <div class="archive-heading"><span>▤ WEEKLY REPORT ARCHIVE</span></div>
     <div class="archive-content" id="weeklyReportArchiveContent">
       <div id="weeklyReportArchiveList">
         <button type="button" class="report-item active" data-report-no="1"><b>Weekly Report No. 001</b><span>Week 25 • June 18–19, 2026</span><span>10 company visits</span></button>
@@ -634,23 +632,11 @@ $("signupBtn").addEventListener("click",async()=>{
 $("logoutBtn").addEventListener("click",async()=>{await sb.auth.signOut();location.reload()});
 
 const sidebarReportArchive=$("sidebarReportArchive");
-const archiveToggleEl=$("archiveToggle"), archiveContentEl=$("weeklyReportArchiveContent");
-function setArchiveVisibility(show, open=false){
+function setArchiveVisibility(show){
   if(!sidebarReportArchive)return;
   sidebarReportArchive.classList.toggle("archive-hidden",!show);
-  if(!show){
-    if(archiveContentEl) archiveContentEl.classList.remove("open");
-    if(archiveToggleEl){
-      archiveToggleEl.classList.remove("open");
-      archiveToggleEl.setAttribute("aria-expanded","false");
-    }
-  }else if(open && archiveContentEl && archiveToggleEl){
-    archiveContentEl.classList.add("open");
-    archiveToggleEl.classList.add("open");
-    archiveToggleEl.setAttribute("aria-expanded","true");
-  }
 }
-// The archive is only visible while working with Reports.
+// The archive is only visible while working with Reports, and is always open when visible.
 setArchiveVisibility(false);
 
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{
@@ -1047,15 +1033,8 @@ function showArchivedReport(n){
   document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.classList.toggle("active",Number(b.dataset.reportNo)===Number(n)));
   if(Number(n)===1){$("reportWeek1Content").style.display="block";$("reportDynamicContent").style.display="none";}else{renderWeeklyReport(Number(n));}
 }
-if(archiveToggleEl && archiveContentEl){
-  archiveToggleEl.addEventListener("click",()=>{
-    const open=archiveContentEl.classList.toggle("open");
-    archiveToggleEl.classList.toggle("open",open);
-    archiveToggleEl.setAttribute("aria-expanded",open?"true":"false");
-  });
-}
 document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.addEventListener("click",()=>{
-  setArchiveVisibility(true,true);
+  setArchiveVisibility(true);
   showArchivedReport(b.dataset.reportNo);
 }));
 </script>
