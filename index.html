@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V13</title>
+<title>Stellar Seeds — Business Development Management System V22</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -11,7 +11,7 @@
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f7faf8;color:var(--ink)}
 button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:flex}
 .sidebar{width:258px;background:linear-gradient(180deg,#006d39,#005a31);color:#fff;padding:20px 14px;display:flex;flex-direction:column;flex-shrink:0}
-.sidebar-report-archive{margin-top:8px;margin-bottom:10px}.sidebar-report-archive .report-item b{color:#fff;font-size:11px}.sidebar-report-archive .report-item span{color:rgba(255,255,255,.78);font-size:9px;margin-top:2px}.sidebar-report-archive .archive-content::-webkit-scrollbar{width:5px}.sidebar-report-archive .archive-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:5px}
+.sidebar-report-archive{margin-top:8px;margin-bottom:10px}.sidebar-report-archive.archive-hidden{display:none!important}.sidebar-report-archive .report-item b{color:#fff;font-size:11px}.sidebar-report-archive .report-item span{color:rgba(255,255,255,.78);font-size:9px;margin-top:2px}.sidebar-report-archive .archive-content::-webkit-scrollbar{width:5px}.sidebar-report-archive .archive-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:5px}
 .brand{background:#fff;border-radius:10px;padding:7px 8px;margin-bottom:20px}.brand img{width:100%;height:auto;max-height:78px;object-fit:contain;display:block}
 .nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#eaf7ef;text-align:left;padding:12px 14px;border-radius:9px;font-weight:650}.nav button:hover,.nav button.active{background:#0b984f;color:#fff}.sidebox{margin-top:auto;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:14px;font-size:12px}.sidebox strong{font-size:22px;display:block;margin-top:5px}.copy{font-size:10px;opacity:.75;margin-top:20px}
 main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}.topbrand{display:flex;align-items:center;gap:0}.topbrand img{width:150px;height:auto;max-height:60px;object-fit:contain;display:block}.topbrand strong{font-size:21px}.topbrand span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.user{display:flex;align-items:center;gap:9px;font-size:13px}.avatar{width:34px;height:34px;border-radius:50%;background:var(--green2);color:#fff;display:grid;place-items:center;font-weight:800}
@@ -123,7 +123,7 @@ body:not(.ready)>.app{display:none!important}
 <button data-view="followups">◷ Follow-ups</button>
 <button data-view="reports">▤ Reports</button>
 </nav>
-<div class="sidebar-report-archive">
+<div class="sidebar-report-archive" id="sidebarReportArchive">
   <div class="archive-panel">
     <button type="button" class="archive-toggle" id="archiveToggle" aria-expanded="false" aria-controls="weeklyReportArchiveContent">
       <span>▤ WEEKLY REPORT ARCHIVE</span><span class="archive-arrow">▼</span>
@@ -633,10 +633,31 @@ $("signupBtn").addEventListener("click",async()=>{
 });
 $("logoutBtn").addEventListener("click",async()=>{await sb.auth.signOut();location.reload()});
 
+const sidebarReportArchive=$("sidebarReportArchive");
+const archiveToggleEl=$("archiveToggle"), archiveContentEl=$("weeklyReportArchiveContent");
+function setArchiveVisibility(show, open=false){
+  if(!sidebarReportArchive)return;
+  sidebarReportArchive.classList.toggle("archive-hidden",!show);
+  if(!show){
+    if(archiveContentEl) archiveContentEl.classList.remove("open");
+    if(archiveToggleEl){
+      archiveToggleEl.classList.remove("open");
+      archiveToggleEl.setAttribute("aria-expanded","false");
+    }
+  }else if(open && archiveContentEl && archiveToggleEl){
+    archiveContentEl.classList.add("open");
+    archiveToggleEl.classList.add("open");
+    archiveToggleEl.setAttribute("aria-expanded","true");
+  }
+}
+// The archive is only visible while working with Reports.
+setArchiveVisibility(false);
+
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
   b.classList.add("active");$(b.dataset.view).classList.add("active");
+  setArchiveVisibility(b.dataset.view==="reports");
   if(b.dataset.view==="map"){setTimeout(()=>{if(map){map.invalidateSize(true);map.fitBounds(mindanaoBounds,{padding:[12,12]})}},120)}
 }));
 ["search","statusFilter","typeFilter"].forEach(id=>$(id).addEventListener("input",render));
@@ -1026,15 +1047,17 @@ function showArchivedReport(n){
   document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.classList.toggle("active",Number(b.dataset.reportNo)===Number(n)));
   if(Number(n)===1){$("reportWeek1Content").style.display="block";$("reportDynamicContent").style.display="none";}else{renderWeeklyReport(Number(n));}
 }
-const archiveToggle=$("archiveToggle"), archiveContent=$("weeklyReportArchiveContent");
-if(archiveToggle && archiveContent){
-  archiveToggle.addEventListener("click",()=>{
-    const open=archiveContent.classList.toggle("open");
-    archiveToggle.classList.toggle("open",open);
-    archiveToggle.setAttribute("aria-expanded",open?"true":"false");
+if(archiveToggleEl && archiveContentEl){
+  archiveToggleEl.addEventListener("click",()=>{
+    const open=archiveContentEl.classList.toggle("open");
+    archiveToggleEl.classList.toggle("open",open);
+    archiveToggleEl.setAttribute("aria-expanded",open?"true":"false");
   });
 }
-document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.addEventListener("click",()=>showArchivedReport(b.dataset.reportNo)));
+document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.addEventListener("click",()=>{
+  setArchiveVisibility(true,true);
+  showArchivedReport(b.dataset.reportNo);
+}));
 </script>
 <script>
 (function(){const b=document.querySelector(".brand img");if(b)document.getElementById("authLogo").src=b.src;})();
