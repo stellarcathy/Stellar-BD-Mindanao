@@ -71,6 +71,18 @@ main{flex:1;min-width:0}.topbar{height:82px;background:#fff;border-bottom:1px so
 .auth-card .logo-box img{max-width:260px;width:100%;height:auto}.auth-card h1{font-size:21px;margin:12px 0 3px}.auth-card p{font-size:12px;color:#6b7d74;line-height:1.45}.auth-card label{display:block;font-size:11px;font-weight:750;margin:12px 0 5px}.auth-card input{width:100%;border:1px solid #d9e8df;border-radius:8px;padding:11px}.auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.auth-error{background:#fff2f2;color:#a12626;border:1px solid #f2c8c8;border-radius:8px;padding:9px;font-size:11px;margin-top:10px;display:none}.auth-note{font-size:10px;color:#6b7d74;margin-top:12px}.role-badge{font-size:9px;background:#e9f7ef;color:#08783f;padding:4px 7px;border-radius:20px;font-weight:800}
 .admin-only{display:none!important}.admin-mode .admin-only{display:revert!important}.viewer-mode .admin-only{display:none!important}.viewer-mode .viewer-only{display:block!important}.viewer-mode .admin-only-panel{display:none!important}
 body:not(.ready)>.app{display:none!important}
+
+.bd-edit-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:10000;align-items:center;justify-content:center;padding:15px}
+.bd-edit-card{background:#fff;border-radius:13px;width:min(760px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.18)}
+.bd-edit-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.bd-edit-head h2{margin:0;color:var(--green);font-size:19px}
+.bd-close{border:0;background:none;font-size:25px;cursor:pointer;color:#60756c}
+.bd-history{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+.bd-history-item{padding:8px 0;border-bottom:1px solid var(--line);font-size:11px}
+.bd-history-item:last-child{border-bottom:0}
+.bd-history-date{font-size:10px;color:var(--muted)}
+.bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
 </style>
 <meta name="app-version" content="V16 - direct admin control visibility fix"></head>
 <body class="not-ready">
@@ -252,6 +264,39 @@ body:not(.ready)>.app{display:none!important}
 
 </div></main></div>
 <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:15px"><div style="background:#fff;border-radius:13px;width:min(650px,100%);max-height:90vh;overflow:auto;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;color:#08783f">Add Company / Supplier</h2><button id="closeModal" style="border:0;background:none;font-size:24px">×</button></div><form id="companyForm" class="form" style="margin-top:15px"><div><label>Company / Organization</label><input id="cName" required></div><div><label>Type</label><select id="cType"><option>Customer</option><option>Supplier</option><option>Cooperative</option><option>Farm</option></select></div><div><label>Location / Address</label><input id="cLocation" required></div><div><label>Latitude</label><input id="cLat" type="number" step="any" required></div><div><label>Longitude</label><input id="cLon" type="number" step="any" required></div><div><label>Product / Commodity</label><input id="cCommodity"></div><div><label>Volume</label><input id="cVolume"></div><div><label>Status</label><select id="cStatus"><option>New Lead</option><option>Prospect</option><option>Initial Inquiry</option><option>Active Discussion</option><option>Under Evaluation</option><option>Ongoing</option><option>Closed Deal</option><option>Trial Completed</option></select></div><div class="full"><label>Opportunity for Stellar</label><textarea id="cOpportunity"></textarea></div><div class="full"><label>Next Action</label><textarea id="cNext"></textarea></div></form><div class="actions"><button class="primary" id="saveCompany">Save Company</button></div></div></div>
+
+<div id="editCompanyModal" class="bd-edit-modal">
+  <div class="bd-edit-card">
+    <div class="bd-edit-head">
+      <h2>Edit Company / Opportunity</h2>
+      <button class="bd-close" id="editClose" type="button">×</button>
+    </div>
+    <form id="editCompanyForm" class="form">
+      <input id="editCompanyId" type="hidden">
+      <div><label>Company / Organization</label><input id="editName" required></div>
+      <div><label>Type</label><select id="editType"><option>Customer</option><option>Supplier</option><option>Cooperative</option><option>Farm</option></select></div>
+      <div class="full"><label>Location / Address</label><input id="editLocation"></div>
+      <div><label>Latitude</label><input id="editLat" type="number" step="any"></div>
+      <div><label>Longitude</label><input id="editLon" type="number" step="any"></div>
+      <div><label>Product / Commodity</label><input id="editCommodity"></div>
+      <div><label>Potential Volume</label><input id="editVolume"></div>
+      <div><label>Status</label><select id="editStatus">
+        <option>New Lead</option><option>Prospect</option><option>Initial Inquiry</option><option>Active Discussion</option><option>Under Evaluation</option><option>Ongoing</option><option>Closed Deal</option><option>Trial Completed</option>
+      </select></div>
+      <div class="full"><label>Opportunity for Stellar</label><textarea id="editOpportunity"></textarea></div>
+      <div class="full"><label>Next Action / Follow-up Action</label><textarea id="editNext"></textarea></div>
+      <div><label>Follow-up Date</label><input id="editFollowDate" type="date"></div>
+      <div><label>Responsible Person</label><select id="editResponsible"><option>Cathy Lyn</option><option>Azelle</option><option>Cathy Lyn & Azelle</option></select></div>
+      <div><label>Follow-up Status</label><select id="editFollowStatus"><option>Pending</option><option>Completed</option><option>Cancelled</option></select></div>
+      <div class="full"><label>Update Note (optional)</label><textarea id="editNote" style="min-height:65px"></textarea></div>
+    </form>
+    <div class="bd-edit-actions">
+      <button class="secondary" id="editCancel" type="button">Cancel</button>
+      <button class="primary" id="editSave" type="button">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -283,12 +328,29 @@ let map,markers=[]; const mindanaoBounds=L.latLngBounds([[5.05,121.75],[10.15,12
 const $=id=>document.getElementById(id);
 function color(s){if(s==="New Lead"||s==="Prospect")return "#f59e0b";if(["Active Discussion","Under Evaluation","Initial Inquiry"].includes(s))return "#eab308";if(s==="Trial Completed")return "#3b82f6";return "#0b9b52"}
 function icon(s){return L.divIcon({className:"",html:'<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color(s)+';border:3px solid white;box-shadow:0 2px 5px #777"><span style="display:block;width:6px;height:6px;background:white;border-radius:50%;margin:5px auto"></span></div>',iconSize:[22,22],iconAnchor:[11,21]})}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function filtered(){let q=$("search").value.toLowerCase(),s=$("statusFilter").value,t=$("typeFilter").value;return companies.filter(x=>(!q||(x.name+" "+x.location+" "+x.commodity).toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(t==="all"||x.type.includes(t)))}
-function showDetail(x){$("detail").innerHTML='<h2>'+x.name+'</h2><div class="type">'+x.type+' • '+x.location+'</div><div class="drow"><div class="lab">Commodity / Service</div><div class="val">'+x.commodity+'</div></div><div class="drow"><div class="lab">Volume</div><div class="val">'+x.volume+'</div></div><div class="drow"><div class="lab">Status</div><div class="val"><span class="pill">'+x.status+'</span></div></div><div class="drow"><div class="lab">Opportunity for Stellar</div><div class="val">'+x.opportunity+'</div></div><div class="drow"><div class="lab">Latest Activity</div><div class="val">'+x.activity+'</div></div><div class="drow"><div class="lab">Next Action</div><div class="val">'+x.next+'</div></div>'}
+async function showDetail(x){
+  if(!x)return;
+  const adminButtons=isAdmin&&x.id?'<div class="actions"><button class="primary" id="editCompanyBtn">✎ Edit Company</button></div>':'';
+  $("detail").innerHTML='<h2>'+esc(x.name)+'</h2><div class="type">'+esc(x.type)+' • '+esc(x.location)+'</div>'+
+    '<div class="drow"><div class="lab">Commodity / Service</div><div class="val">'+esc(x.commodity)+'</div></div>'+
+    '<div class="drow"><div class="lab">Volume</div><div class="val">'+esc(x.volume)+'</div></div>'+
+    '<div class="drow"><div class="lab">Status</div><div class="val"><span class="pill">'+esc(x.status)+'</span></div></div>'+
+    '<div class="drow"><div class="lab">Opportunity for Stellar</div><div class="val">'+esc(x.opportunity)+'</div></div>'+
+    '<div class="drow"><div class="lab">Latest Activity</div><div class="val">'+esc(x.activity)+'</div></div>'+
+    '<div class="drow"><div class="lab">Next Action</div><div class="val">'+esc(x.next||"No follow-up recorded.")+'</div></div>'+
+    '<div id="statusHistoryBox" class="bd-history"><div class="lab">Status History</div><div class="val" style="color:var(--muted)">Loading…</div></div>'+adminButtons;
+  if(isAdmin&&x.id){
+    $("editCompanyBtn").addEventListener("click",()=>openEditCompany(x));
+  }
+  await loadStatusHistory(x.id);
+}
 function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{let m=L.marker([x.lat,x.lon],{icon:icon(x.status)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
 function render(){let a=filtered();$("mAll").textContent=a.length;$("mLead").textContent=a.filter(x=>x.status==="New Lead").length;$("mActive").textContent=a.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("mClosed").textContent=a.filter(x=>x.status==="Closed Deal").length;$("sideLeads").textContent=companies.filter(x=>x.status==="New Lead").length;$("sideActive").textContent=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("sideClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;$("sideTotal").textContent=companies.length;$("dAct").textContent=activities.length;$("dComp").textContent=companies.length;$("dLead").textContent=companies.filter(x=>x.status==="New Lead").length;$("dClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;
 $("pipelineBody").innerHTML=companies.map(x=>'<tr><td><b>'+x.name+'</b><br><span style="color:#6b7d74">'+x.location+'</span></td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.opportunity+'</td><td><span class="pill">'+x.status+'</span></td><td>'+x.next+'</td></tr>').join("");
-$("companyCards").innerHTML=companies.map(x=>'<div class="opcard"><h3>'+x.name+'</h3><p>'+x.type+'</p><p>'+x.location+'</p><p><b>'+x.commodity+'</b> • '+x.volume+'</p><span class="pill">'+x.status+'</span></div>').join("");
+$("companyCards").innerHTML=companies.map(x=>'<div class="opcard" data-company-id="'+x.id+'" style="cursor:pointer"><h3>'+esc(x.name)+'</h3><p>'+esc(x.type)+'</p><p>'+esc(x.location)+'</p><p><b>'+esc(x.commodity)+'</b> • '+esc(x.volume)+'</p><span class="pill">'+esc(x.status)+'</span></div>').join("");
+$("companyCards").querySelectorAll("[data-company-id]").forEach(el=>el.addEventListener("click",()=>{const c=companies.find(x=>x.id===el.dataset.companyId);if(c){document.querySelectorAll(".nav button").forEach(b=>{if(b.dataset.view==="map"){document.querySelectorAll(".nav button").forEach(z=>z.classList.remove("active"));b.classList.add("active")}});document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("map").classList.add("active");showDetail(c);if(map&&Number.isFinite(Number(c.lat))&&Number.isFinite(Number(c.lon))){map.setView([c.lat,c.lon],11)}}}));
 $("activityList").innerHTML=activities.slice().reverse().map(x=>'<div style="border-bottom:1px solid #d9e8df;padding:10px 2px"><b>'+x.org+'</b><div style="font-size:11px;color:#6b7d74">'+x.date+' • '+x.type+' • '+x.status+'</div><div style="font-size:12px;margin-top:3px">'+x.result+'</div><div style="font-size:11px;color:#08783f;margin-top:3px">Next: '+x.next+'</div></div>').join("");
 $("followupList").innerHTML=companies.filter(x=>!["Closed Deal","Trial Completed"].includes(x.status)).map(x=>'<div style="border-bottom:1px solid #d9e8df;padding:10px"><b>'+x.name+'</b> <span class="pill">'+x.status+'</span><div style="font-size:12px;color:#6b7d74;margin-top:4px">'+x.next+'</div></div>').join("");
 $("dashCards").innerHTML=companies.slice(0,6).map(x=>'<div class="opcard"><h3>'+x.name+'</h3><p>'+x.commodity+' • '+x.volume+'</p><span class="pill">'+x.status+'</span><p style="margin-top:8px">'+x.next+'</p></div>').join("");
@@ -301,6 +363,110 @@ function generateReport(){
   const active=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing"].includes(x.status));
   reportContent.innerHTML='<h2>Executive Summary</h2><p>This weekly report is generated from the Business Development activities and pipeline records entered in the system. The current focus is strengthening the corn sourcing network, developing customer partnerships, and advancing supplier and cooperative opportunities.</p><h2>Week in Numbers</h2><ul><li>Recorded activities: '+activities.length+'</li><li>Pipeline opportunities: '+companies.length+'</li><li>New leads: '+leads.length+'</li><li>Active / ongoing opportunities: '+active.length+'</li><li>Closed deals: '+closed.length+'</li></ul><h2>Business Development Highlights</h2><ul>'+activities.slice(0,6).map(x=>'<li><b>'+x.org+'</b> — '+x.result+'</li>').join("")+'</ul><h2>Pipeline Status</h2><div class="table-wrap"><table class="table"><thead><tr><th>Company</th><th>Commodity</th><th>Volume</th><th>Status</th><th>Next Action</th></tr></thead><tbody>'+companies.map(x=>'<tr><td>'+x.name+'</td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.status+'</td><td>'+x.next+'</td></tr>').join("")+'</tbody></table></div><h2>Next Steps</h2><ul>'+companies.filter(x=>!["Closed Deal","Trial Completed"].includes(x.status)).map(x=>'<li>'+x.next+' — <b>'+x.name+'</b></li>').join("")+'</ul>';
 }
+
+async function loadStatusHistory(companyId){
+  const box=$("statusHistoryBox");
+  if(!box||!companyId)return;
+  const {data,error}=await sb.from("bd_company_status_history")
+    .select("old_status,new_status,note,changed_at,changed_by")
+    .eq("company_id",companyId).order("changed_at",{ascending:false}).limit(12);
+  if(error){
+    box.innerHTML='<div class="lab">Status History</div><div class="val" style="color:#b42318">Unable to load history.</div>';
+    return;
+  }
+  const rows=data||[];
+  if(!rows.length){
+    box.innerHTML='<div class="lab">Status History</div><div class="val" style="color:var(--muted)">No status changes recorded yet.</div>';
+    return;
+  }
+  box.innerHTML='<div class="lab">Status History</div>'+rows.map(h=>{
+    const dt=h.changed_at?new Date(h.changed_at).toLocaleString():"";
+    const change=(h.old_status||"New")+' → '+h.new_status;
+    return '<div class="bd-history-item"><b>'+esc(change)+'</b><div class="bd-history-date">'+esc(dt)+(h.note?' • '+esc(h.note):'')+'</div></div>';
+  }).join("");
+}
+
+function openEditCompany(x){
+  if(!isAdmin||!x?.id)return;
+  $("editCompanyId").value=x.id;
+  $("editName").value=x.name||"";
+  $("editType").value=x.type||"Customer";
+  $("editLocation").value=x.location||"";
+  $("editLat").value=Number.isFinite(Number(x.lat))?x.lat:"";
+  $("editLon").value=Number.isFinite(Number(x.lon))?x.lon:"";
+  $("editCommodity").value=x.commodity==="—"?"":(x.commodity||"");
+  $("editVolume").value=x.volume==="TBD"?"":(x.volume||"");
+  $("editStatus").value=x.status||"Prospect";
+  $("editOpportunity").value=x.opportunity||"";
+  $("editNext").value=(x.next==="Follow up"?"":x.next)||"";
+  $("editFollowDate").value=new Date().toISOString().slice(0,10);
+  $("editResponsible").value="Cathy Lyn";
+  $("editFollowStatus").value="Pending";
+  $("editNote").value="";
+  $("editCompanyModal").style.display="flex";
+}
+
+function closeEditCompany(){$("editCompanyModal").style.display="none"}
+
+async function saveEditedCompany(){
+  if(!isAdmin)return alert("Viewer accounts cannot edit records.");
+  const id=$("editCompanyId").value;
+  const x=companies.find(c=>c.id===id);
+  if(!x)return alert("Company record not found.");
+
+  const newStatus=$("editStatus").value;
+  const payload={
+    name:$("editName").value.trim(),
+    entity_type:$("editType").value,
+    address:$("editLocation").value.trim(),
+    latitude:Number($("editLat").value),
+    longitude:Number($("editLon").value),
+    commodities:$("editCommodity").value.trim(),
+    potential_volume:$("editVolume").value.trim(),
+    status:newStatus,
+    notes:$("editOpportunity").value.trim()
+  };
+  if(!payload.name)return alert("Company name is required.");
+  if(!Number.isFinite(payload.latitude)||!Number.isFinite(payload.longitude))
+    return alert("Please enter valid latitude and longitude.");
+
+  const oldStatus=x.status||"Prospect";
+  const note=$("editNote").value.trim();
+
+  const {error:updateError}=await sb.from("bd_companies").update(payload).eq("id",id);
+  if(updateError)return alert(updateError.message);
+
+  if(oldStatus!==newStatus){
+    const {error:historyError}=await sb.from("bd_company_status_history").insert({
+      company_id:id,old_status:oldStatus,new_status:newStatus,note:note||null,changed_by:currentUser.id
+    });
+    if(historyError)return alert("Company saved, but status history could not be recorded: "+historyError.message);
+  }
+
+  const action=$("editNext").value.trim();
+  const followDate=$("editFollowDate").value;
+  if(action){
+    const {error:fuError}=await sb.from("bd_followups").insert({
+      company_id:id,followup_date:followDate||new Date().toISOString().slice(0,10),
+      responsible_person:$("editResponsible").value,action_required:action,
+      status:$("editFollowStatus").value,notes:note||null,created_by:currentUser.id
+    });
+    if(fuError)return alert("Company saved, but follow-up could not be recorded: "+fuError.message);
+  }
+
+  closeEditCompany();
+  await loadCloudData();
+  render();
+  const updated=companies.find(c=>c.id===id);
+  if(updated)await showDetail(updated);
+  alert("Company information updated and saved permanently to Supabase.");
+}
+
+$("editClose").addEventListener("click",closeEditCompany);
+$("editCancel").addEventListener("click",closeEditCompany);
+$("editSave").addEventListener("click",saveEditedCompany);
+$("editCompanyModal").addEventListener("click",e=>{if(e.target.id==="editCompanyModal")closeEditCompany()});
+
 function initMap(){
   if(map) return;
   map=L.map("bdMap",{
@@ -352,17 +518,38 @@ async function loadCloudData(){
   ]);
   if(c.error) throw c.error;if(a.error) throw a.error;
   if(f.error) throw f.error;if(r.error) throw r.error;
-  companies=(c.data||[]).map(x=>({
-    id:x.id,name:x.name,type:x.entity_type,location:[x.city,x.province].filter(Boolean).join(", ")||x.address||"Location to confirm",
-    lat:x.latitude,lon:x.longitude,commodity:x.commodities||"—",volume:x.potential_volume||"TBD",
-    status:x.status||"Prospect",opportunity:x.notes||"Opportunity under evaluation.",next:"Follow up",
-    activity:"Cloud record"
-  }));
+
+  const followups=f.data||[];
+  const byCompany={};
+  followups.forEach(row=>{
+    if(!row.company_id)return;
+    if(!byCompany[row.company_id])byCompany[row.company_id]=[];
+    byCompany[row.company_id].push(row);
+  });
+
+  companies=(c.data||[]).map(x=>{
+    const fu=(byCompany[x.id]||[]).filter(y=>y.status!=="Completed").sort((p,q)=>{
+      const pd=p.followup_date||"9999-12-31", qd=q.followup_date||"9999-12-31";
+      return pd.localeCompare(qd);
+    })[0] || (byCompany[x.id]||[]).slice(-1)[0];
+    return {
+      id:x.id,name:x.name,type:x.entity_type,
+      location:[x.city,x.province].filter(Boolean).join(", ")||x.address||"Location to confirm",
+      lat:x.latitude,lon:x.longitude,commodity:x.commodities||"—",volume:x.potential_volume||"TBD",
+      status:x.status||"Prospect",opportunity:x.notes||"Opportunity under evaluation.",
+      next:fu?.action_required||"Follow up",
+      activity:"Cloud record"
+    };
+  });
+
+  const companyNames=Object.fromEntries(companies.map(x=>[x.id,x.name]));
   activities=(a.data||[]).map(x=>({
-    id:x.id,date:x.activity_date,org:x.company_id||"Unlinked",type:x.activity_type||"Activity",
+    id:x.id,date:x.activity_date,org:companyNames[x.company_id]||x.company_id||"Unlinked",
+    company_id:x.company_id||null,type:x.activity_type||"Activity",
     result:x.result||x.findings||x.discussion||"",status:"Recorded",next:x.next_action||"Follow up"
   }));
   window.cloudReports=r.data||[];
+  window.cloudFollowups=followups;
   if(!companies.length) companies=[];
   if(!activities.length) activities=[];
 }
@@ -460,8 +647,11 @@ $("saveCompany").addEventListener("click",async e=>{
 
 $("saveActivity").addEventListener("click",async()=>{
   if(!isAdmin)return alert("Viewer accounts cannot add activities.");
-  if(!$("aOrg").value)return alert("Please enter the company / organization.");
+  const org=$("aOrg").value.trim();
+  if(!org)return alert("Please enter the company / organization.");
+  const matched=companies.find(c=>c.name.toLowerCase()===org.toLowerCase());
   const {error}=await sb.from("bd_activities").insert({
+    company_id:matched?.id||null,
     activity_date:$("aDate").value||new Date().toISOString().slice(0,10),
     team_member:$("aMember").value,activity_type:$("aType").value,
     discussion:$("aDiscussion").value,findings:$("aDiscussion").value,
