@@ -1707,20 +1707,16 @@ Ube = Purple
     var marker = L.marker([STELLAR_LAT, STELLAR_LNG], {
       icon: icon,
       zIndexOffset: 10000,
-      title: "Stellar Seeds Corporation"
+      title: "Stellar Seeds Corp"
     }).addTo(map);
 
-    marker.bindTooltip("Stellar Seeds Corporation", {
+    marker.bindTooltip("Stellar Seeds Corp", {
       direction: "top",
       offset: [0, -10],
       permanent: false
     });
 
-    marker.bindPopup(
-      "<b>Stellar Seeds Corporation</b><br>" +
-      "Reference Location<br>" +
-      "6.1637297262, 125.1139568212"
-    );
+    marker.bindPopup("<b>Stellar Seeds Corp</b>");
 
     window.__stellarSeedsReferenceMarker = marker;
     return true;
