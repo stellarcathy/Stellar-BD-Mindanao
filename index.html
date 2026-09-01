@@ -1,1356 +1,454 @@
-<!-- STELLAR BD MINDANAO V27 — REPAIRED CROP / PRODUCT UPGRADE -->
-<style id="v27-product-upgrade-css">
-.v27-product-tabs{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin:12px 0 16px;
-}
-.v27-product-tab{
-  border:1px solid #d9e8df;
-  background:#fff;
-  color:#315347;
-  border-radius:9px;
-  padding:8px 12px;
-  font-size:11px;
-  font-weight:800;
-  cursor:pointer;
-}
-.v27-product-tab.active{
-  background:#08783f;
-  color:#fff;
-  border-color:#08783f;
-}
-.v27-product-tab .v27-dot{
-  display:inline-block;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  margin-right:5px;
-  vertical-align:middle;
-}
-.v27-product-summary{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:10px;
-  margin-bottom:14px;
-}
-.v27-product-card{
-  background:#fff;
-  border:1px solid #d9e8df;
-  border-radius:10px;
-  padding:12px;
-  cursor:pointer;
-}
-.v27-product-card.active{
-  border-color:#08783f;
-  box-shadow:0 0 0 2px rgba(8,120,63,.08);
-}
-.v27-product-name{
-  font-size:11px;
-  font-weight:800;
-}
-.v27-product-count{
-  font-size:24px;
-  font-weight:850;
-  margin-top:5px;
-  color:#16352a;
-}
-.v27-company-product-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-  margin-top:7px;
-}
-.v27-product-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  padding:3px 7px;
-  border-radius:999px;
-  font-size:9px;
-  font-weight:800;
-  border:1px solid #d9e8df;
-  background:#f8fcfa;
-}
-.v27-company-list{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-}
-.v27-company-item{
-  background:#fff;
-  border:1px solid #e0ebe5;
-  border-radius:10px;
-  padding:11px;
-  cursor:pointer;
-}
-.v27-company-item:hover{
-  border-color:#08783f;
-}
-.v27-map-filter{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:9px;
-}
-.v27-map-filter select{
-  border:1px solid #d9e8df;
-  border-radius:8px;
-  padding:7px 9px;
-  background:#fff;
-}
-.v27-map-legend{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  font-size:10px;
-  color:#51665d;
-  margin-top:8px;
-}
-.v27-map-legend span{
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-}
-.v27-map-legend i{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  display:inline-block;
-}
-.v27-product-empty{
-  padding:18px;
-  text-align:center;
-  color:#6b7d74;
-  border:1px dashed #cbded4;
-  border-radius:10px;
-}
-
+<style id="v27-repaired-product-css">
+.v27-product-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+.v27-product-tab{border:1px solid #d9e8df;background:#fff;color:#315347;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer}
+.v27-product-tab.active{background:#08783f;color:#fff;border-color:#08783f}
+.v27-product-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.v27-product-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.v27-product-card{background:#fff;border:1px solid #d9e8df;border-radius:10px;padding:12px;cursor:pointer}
+.v27-product-card.active{border-color:#08783f;box-shadow:0 0 0 2px rgba(8,120,63,.08)}
+.v27-product-name{font-size:11px;font-weight:800}
+.v27-product-count{font-size:24px;font-weight:850;margin-top:5px;color:#16352a}
+.v27-company-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.v27-company-item{background:#fff;border:1px solid #e0ebe5;border-radius:10px;padding:11px;cursor:pointer}
+.v27-company-item:hover{border-color:#08783f}
+.v27-company-products{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.v27-product-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:800;border:1px solid #d9e8df;background:#f8fcfa}
+.v27-map-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.v27-map-filter select{border:1px solid #d9e8df;border-radius:8px;padding:7px 9px;background:#fff}
+.v27-map-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10px;color:#51665d;margin:7px 0 10px}
+.v27-map-legend span{display:inline-flex;align-items:center;gap:4px}
+.v27-map-legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.v27-product-empty{padding:18px;text-align:center;color:#6b7d74;border:1px dashed #cbded4;border-radius:10px}
 @media(max-width:900px){
-  .v27-product-summary{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-  .v27-company-list{
-    grid-template-columns:1fr;
-  }
+  .v27-product-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .v27-company-list{grid-template-columns:1fr}
 }
-@media(max-width:600px){
-  .v27-product-summary{
-    grid-template-columns:1fr;
-  }
-}
+@media(max-width:600px){.v27-product-summary{grid-template-columns:1fr}}
 </style>
 
-<script id="v27-product-upgrade-repaired">
+<script id="v27-repaired-product-patch">
 (function(){
-
   "use strict";
 
-  /* =========================================================
-     V27 REPAIR
-     - No recursive MutationObserver
-     - Preserve original refreshMap
-     - Safe initialization
-     - Does not modify Supabase authentication
-     - Does not modify reports/photos
-     ========================================================= */
+  if (window.__STELLAR_BD_V27_REPAIRED__) return;
+  window.__STELLAR_BD_V27_REPAIRED__ = true;
 
   const PRODUCTS = {
-    corn: {
-      name:"Commercial Corn",
-      color:"#f2c400",
-      icon:"🌽"
-    },
-    coffee: {
-      name:"Coffee",
-      color:"#111111",
-      icon:"☕"
-    },
-    cacao: {
-      name:"Cacao",
-      color:"#7a4b2a",
-      icon:"🍫"
-    },
-    pepper: {
-      name:"Pepper",
-      color:"#f28c18",
-      icon:"🌶️"
-    },
-    ube: {
-      name:"Ube",
-      color:"#7a3db8",
-      icon:"🍠"
-    }
+    corn:   {name:"Commercial Corn", color:"#f2c400", icon:"🌽"},
+    coffee: {name:"Coffee",          color:"#111111", icon:"☕"},
+    cacao:  {name:"Cacao",           color:"#7a4b2a", icon:"🍫"},
+    pepper: {name:"Pepper",          color:"#f28c18", icon:"🌶️"},
+    ube:    {name:"Ube",             color:"#7a3db8", icon:"🍠"}
   };
 
   let selectedProduct = "all";
+  let dashboardObserver = null;
+  let dashboardRefreshTimer = null;
 
-  /* ---------------------------------------------------------
-     SAFE HTML ESCAPE
-     --------------------------------------------------------- */
-
-  function escV27(value){
-    return String(value ?? "").replace(/[&<>"']/g,function(c){
-      return {
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-      }[c];
+  function esc(value){
+    return String(value == null ? "" : value).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
     });
   }
 
-  /* ---------------------------------------------------------
-     NORMALIZE PRODUCT TEXT
-     --------------------------------------------------------- */
+  function productKeys(company){
+    if (!company) return [];
 
-  function normalizeProductText(text){
+    const raw = [
+      company.commodity,
+      company.commodities,
+      company.product
+    ].filter(Boolean).join(" ").toLowerCase();
 
-    return String(text || "")
-      .toLowerCase()
-      .replace(/purple\s*yam/g,"ube")
-      .replace(/commercial\s+corn/g,"corn")
-      .replace(/feed[-\s]*grade\s+corn/g,"corn")
-      .replace(/wet\s+corn\s+cobs?/g,"corn")
-      .replace(/corn\s+cobs?/g,"corn");
+    const keys = [];
+
+    if (/\bcorn\b|feed[-\s]*grade|wet\s+corn|corn\s+cob/.test(raw)) keys.push("corn");
+    if (/\bcoffee\b/.test(raw)) keys.push("coffee");
+    if (/\bcacao\b|\bcocoa\b/.test(raw)) keys.push("cacao");
+    if (/\bpepper\b/.test(raw)) keys.push("pepper");
+    if (/\bube\b|\bpurple\s+yam\b/.test(raw)) keys.push("ube");
+
+    return [...new Set(keys)];
   }
 
-  /* ---------------------------------------------------------
-     PRODUCT DETECTION
-     Uses BOTH commodity and commodities fields.
-     --------------------------------------------------------- */
-
-  function productsForCompany(company){
-
-    if(!company) return [];
-
-    const raw = normalizeProductText(
-      [
-        company.commodity,
-        company.commodities,
-        company.product
-      ]
-      .filter(Boolean)
-      .join(" ")
-    );
-
-    const found = [];
-
-    if(/\bcorn\b/.test(raw)){
-      found.push("corn");
-    }
-
-    if(/\bcoffee\b/.test(raw)){
-      found.push("coffee");
-    }
-
-    if(/\bcacao\b/.test(raw) || /\bcocoa\b/.test(raw)){
-      found.push("cacao");
-    }
-
-    if(/\bpepper\b/.test(raw)){
-      found.push("pepper");
-    }
-
-    if(/\bube\b/.test(raw)){
-      found.push("ube");
-    }
-
-    return [...new Set(found)];
+  function getCompanies(){
+    return Array.isArray(window.companies) ? window.companies : [];
   }
 
-  function companiesForProduct(key){
+  function companiesFor(key){
+    const list = getCompanies();
+    if (key === "all") return list;
+    return list.filter(function(c){ return productKeys(c).includes(key); });
+  }
 
-    if(key === "all"){
-      return Array.isArray(companies) ? companies : [];
-    }
+  function companyByMarker(marker){
+    const pos = marker && marker.getLatLng ? marker.getLatLng() : null;
+    if (!pos) return null;
 
-    return (companies || []).filter(function(company){
-      return productsForCompany(company).includes(key);
+    return getCompanies().find(function(c){
+      const lat = Number(c.lat);
+      const lon = Number(c.lon);
+      return Number.isFinite(lat) && Number.isFinite(lon) &&
+        Math.abs(lat - Number(pos.lat)) < 0.00001 &&
+        Math.abs(lon - Number(pos.lng)) < 0.00001;
+    }) || null;
+  }
+
+  function pinIcon(keys){
+    const colors = (keys || []).map(function(k){
+      return PRODUCTS[k] && PRODUCTS[k].color;
+    }).filter(Boolean);
+
+    const background = colors.length === 1
+      ? colors[0]
+      : colors.length > 1
+        ? "conic-gradient(" + colors.map(function(c,i){
+            const a = (i * 100 / colors.length);
+            const b = ((i + 1) * 100 / colors.length);
+            return c + " " + a + "% " + b + "%";
+          }).join(",") + ")"
+        : "#9aa9a2";
+
+    return L.divIcon({
+      className:"",
+      html:
+        '<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;' +
+        'transform:rotate(-45deg);background:'+background+';' +
+        'border:3px solid #fff;box-shadow:0 2px 5px #777;">' +
+        '<span style="display:block;width:6px;height:6px;background:#fff;' +
+        'border-radius:50%;margin:5px auto;"></span></div>',
+      iconSize:[22,22],
+      iconAnchor:[11,21]
     });
   }
 
-  /* ---------------------------------------------------------
-     PRODUCT CHIP
-     --------------------------------------------------------- */
+  function applyMapProductFilter(){
+    if (!window.map || !Array.isArray(window.markers)) return;
 
-  function productChip(key){
+    window.markers.forEach(function(marker){
+      const company = companyByMarker(marker);
+      const keys = company ? productKeys(company) : [];
 
-    const p = PRODUCTS[key];
+      if (
+        selectedProduct !== "all" &&
+        !keys.includes(selectedProduct)
+      ){
+        if (window.map.hasLayer(marker)) {
+          window.map.removeLayer(marker);
+        }
+        return;
+      }
 
-    if(!p) return "";
+      if (!window.map.hasLayer(marker)) {
+        marker.addTo(window.map);
+      }
 
-    return (
-      '<span class="v27-product-chip" ' +
-      'style="border-color:'+p.color+'55">' +
-      '<i class="v27-dot" style="background:'+p.color+'"></i>' +
-      escV27(p.name) +
-      '</span>'
-    );
+      const displayKeys =
+        selectedProduct === "all" ? keys : [selectedProduct];
+
+      if (marker.setIcon) {
+        marker.setIcon(pinIcon(displayKeys));
+      }
+    });
   }
 
-  /* ---------------------------------------------------------
-     DASHBOARD PANEL
-     --------------------------------------------------------- */
+  /*
+   * SAFE WRAPPER:
+   * The original V26/V25 refreshMap is called first.
+   * We never call the wrapper from inside itself.
+   */
+  function wrapMapRefresh(){
+    if (
+      typeof window.refreshMap !== "function" ||
+      window.refreshMap.__v27Wrapped
+    ) return;
+
+    const baseRefreshMap = window.refreshMap;
+
+    function wrappedRefreshMap(){
+      const result = baseRefreshMap.apply(this, arguments);
+
+      try {
+        applyMapProductFilter();
+      } catch(e) {
+        console.error("V27 map styling error:", e);
+      }
+
+      return result;
+    }
+
+    wrappedRefreshMap.__v27Wrapped = true;
+    wrappedRefreshMap.__v27Original = baseRefreshMap;
+    window.refreshMap = wrappedRefreshMap;
+  }
+
+  function refreshBaseMap(){
+    try {
+      if (typeof window.refreshMap === "function") {
+        window.refreshMap();
+      }
+    } catch(e) {
+      console.error("V27 map refresh error:", e);
+    }
+  }
 
   function installDashboard(){
-
     const dashboard = document.getElementById("dashboard");
+    if (!dashboard) return null;
 
-    if(
-      !dashboard ||
-      document.getElementById("v27ProductDashboard")
-    ){
-      return;
+    let panel = document.getElementById("v27ProductDashboard");
+
+    if (!panel){
+      panel = document.createElement("div");
+      panel.id = "v27ProductDashboard";
+      panel.className = "panel";
+      panel.style.marginTop = "13px";
+      panel.innerHTML =
+        '<div class="panel-title">🌾 Crop / Product Development</div>' +
+        '<div id="v27ProductTabs" class="v27-product-tabs"></div>' +
+        '<div id="v27ProductSummary" class="v27-product-summary"></div>' +
+        '<div id="v27ProductCompanies" class="v27-company-list"></div>';
+      dashboard.appendChild(panel);
     }
 
-    const panel = document.createElement("div");
-
-    panel.className = "panel";
-    panel.id = "v27ProductDashboard";
-    panel.style.marginTop = "13px";
-
-    panel.innerHTML =
-      '<div class="panel-title">🌾 Crop / Product Development</div>' +
-      '<div id="v27ProductTabs" class="v27-product-tabs"></div>' +
-      '<div id="v27ProductSummary" class="v27-product-summary"></div>' +
-      '<div id="v27ProductCompanies" class="v27-company-list"></div>';
-
-    dashboard.appendChild(panel);
+    return panel;
   }
 
-  /* ---------------------------------------------------------
-     MAP FILTER
-     --------------------------------------------------------- */
+  function renderDashboard(){
+    const panel = installDashboard();
+    if (!panel) return;
 
-  function installMapFilter(){
+    const tabs = document.getElementById("v27ProductTabs");
+    const summary = document.getElementById("v27ProductSummary");
+    const list = document.getElementById("v27ProductCompanies");
 
-    const mapView = document.getElementById("map");
+    if (!tabs || !summary || !list) return;
 
-    if(
-      !mapView ||
-      document.getElementById("v27MapProductFilter")
-    ){
+    tabs.innerHTML =
+      '<button type="button" class="v27-product-tab ' +
+      (selectedProduct === "all" ? "active" : "") +
+      '" data-v27-product="all">All Products</button>' +
+      Object.keys(PRODUCTS).map(function(key){
+        const p = PRODUCTS[key];
+        return '<button type="button" class="v27-product-tab ' +
+          (selectedProduct === key ? "active" : "") +
+          '" data-v27-product="'+key+'">' +
+          '<span class="v27-product-dot" style="background:'+p.color+'"></span>' +
+          p.icon + ' ' + esc(p.name) +
+          '</button>';
+      }).join("");
+
+    tabs.querySelectorAll("[data-v27-product]").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        selectedProduct = this.getAttribute("data-v27-product");
+
+        const select = document.getElementById("v27MapProductSelect");
+        if (select) select.value = selectedProduct;
+
+        renderDashboard();
+        refreshBaseMap();
+      });
+    });
+
+    summary.innerHTML = Object.keys(PRODUCTS).map(function(key){
+      const p = PRODUCTS[key];
+      const count = companiesFor(key).length;
+
+      return '<div class="v27-product-card ' +
+        (selectedProduct === key ? "active" : "") +
+        '" data-v27-card="'+key+'">' +
+        '<div class="v27-product-name">' +
+        '<span class="v27-product-dot" style="background:'+p.color+'"></span>' +
+        p.icon + ' ' + esc(p.name) +
+        '</div>' +
+        '<div class="v27-product-count">'+count+'</div>' +
+        '<div style="font-size:9px;color:#6b7d74">Companies / organizations</div>' +
+        '</div>';
+    }).join("");
+
+    summary.querySelectorAll("[data-v27-card]").forEach(function(card){
+      card.addEventListener("click",function(){
+        selectedProduct = this.getAttribute("data-v27-card");
+
+        const select = document.getElementById("v27MapProductSelect");
+        if (select) select.value = selectedProduct;
+
+        renderDashboard();
+        refreshBaseMap();
+      });
+    });
+
+    const rows = companiesFor(selectedProduct);
+
+    if (!rows.length){
+      list.innerHTML =
+        '<div class="v27-product-empty" style="grid-column:1/-1">' +
+        'No companies are currently tagged under this product.' +
+        '</div>';
       return;
     }
 
-    const panel = mapView.querySelector(".panel");
+    list.innerHTML = rows.map(function(company){
+      const keys = productKeys(company);
 
-    if(!panel) return;
+      return '<div class="v27-company-item" data-v27-company="' +
+        esc(company.id || "") + '">' +
+        '<b>'+esc(company.name || "")+'</b>' +
+        '<div style="font-size:10px;color:#6b7d74;margin-top:3px">' +
+        esc(company.type || "") +
+        (company.location ? ' • '+esc(company.location) : '') +
+        '</div>' +
+        '<div class="v27-company-products">' +
+        keys.map(function(key){
+          const p = PRODUCTS[key];
+          return '<span class="v27-product-chip">' +
+            '<span class="v27-product-dot" style="background:'+p.color+'"></span>' +
+            esc(p.name) +
+            '</span>';
+        }).join("") +
+        '</div>' +
+        '<div style="font-size:10px;margin-top:7px">' +
+        '<b>Status:</b> '+esc(company.status || "") +
+        (company.volume ? ' &nbsp; <b>Volume:</b> '+esc(company.volume) : '') +
+        '</div>' +
+        '</div>';
+    }).join("");
 
-    const firstTitle = panel.querySelector(".panel-title");
+    list.querySelectorAll("[data-v27-company]").forEach(function(item){
+      item.addEventListener("click",function(){
+        const id = this.getAttribute("data-v27-company");
+        const company = getCompanies().find(function(c){
+          return String(c.id || "") === String(id);
+        });
 
-    const box = document.createElement("div");
+        if (!company) return;
 
-    box.id = "v27MapProductFilter";
-    box.className = "v27-map-filter";
+        if (typeof window.showDetail === "function"){
+          window.showDetail(company);
+        }
 
-    box.innerHTML =
-      '<label style="font-size:10px;font-weight:800;color:#51665d">' +
-      'Product:</label>' +
+        if (
+          window.map &&
+          Number.isFinite(Number(company.lat)) &&
+          Number.isFinite(Number(company.lon))
+        ){
+          window.map.setView(
+            [Number(company.lat), Number(company.lon)],
+            11
+          );
+        }
+      });
+    });
+  }
 
+  function installMapControls(){
+    const mapSection = document.getElementById("map");
+    if (!mapSection) return;
+
+    if (document.getElementById("v27MapProductFilter")) return;
+
+    const panel = mapSection.querySelector(".panel");
+    if (!panel) return;
+
+    const filter = document.createElement("div");
+    filter.id = "v27MapProductFilter";
+    filter.className = "v27-map-filter";
+
+    filter.innerHTML =
+      '<label style="font-size:10px;font-weight:800;color:#51665d">Product:</label>' +
       '<select id="v27MapProductSelect">' +
-
       '<option value="all">All Products</option>' +
       '<option value="corn">Commercial Corn</option>' +
       '<option value="coffee">Coffee</option>' +
       '<option value="cacao">Cacao</option>' +
       '<option value="pepper">Pepper</option>' +
       '<option value="ube">Ube</option>' +
+      '</select>';
 
-      '</select>' +
+    const title = panel.querySelector(".panel-title");
 
-      '<span style="font-size:10px;color:#6b7d74">' +
-      'Pin color = product' +
-      '</span>';
-
-    if(firstTitle){
-      firstTitle.insertAdjacentElement("afterend",box);
-    }else{
-      panel.prepend(box);
+    if (title) {
+      title.insertAdjacentElement("afterend", filter);
+    } else {
+      panel.prepend(filter);
     }
 
     const legend = document.createElement("div");
-
     legend.className = "v27-map-legend";
 
-    legend.innerHTML =
-      Object.keys(PRODUCTS).map(function(key){
+    legend.innerHTML = Object.keys(PRODUCTS).map(function(key){
+      const p = PRODUCTS[key];
+      return '<span><i style="background:'+p.color+'"></i>' +
+        esc(p.name) + '</span>';
+    }).join("");
 
-        const p = PRODUCTS[key];
+    filter.insertAdjacentElement("afterend", legend);
 
-        return (
-          '<span>' +
-          '<i style="background:'+p.color+'"></i>' +
-          escV27(p.name) +
-          '</span>'
-        );
+    const select = document.getElementById("v27MapProductSelect");
 
-      }).join("");
-
-    box.insertAdjacentElement("afterend",legend);
-
-    const select =
-      document.getElementById("v27MapProductSelect");
-
-    if(select){
+    if (select){
+      select.value = selectedProduct;
 
       select.addEventListener("change",function(){
-
         selectedProduct = this.value;
-
-        renderV27Dashboard();
-        safeRefreshMap();
-
+        renderDashboard();
+        refreshBaseMap();
       });
-
     }
   }
 
-  /* ---------------------------------------------------------
-     MAP PIN
-     --------------------------------------------------------- */
-
-  function buildIconForProducts(keys){
-
-    const colors = (keys || [])
-      .map(function(key){
-        return PRODUCTS[key]?.color;
-      })
-      .filter(Boolean);
-
-    if(!colors.length){
-
-      return L.divIcon({
-        className:"",
-        html:
-          '<div style="' +
-          'width:22px;' +
-          'height:22px;' +
-          'border-radius:50% 50% 50% 0;' +
-          'transform:rotate(-45deg);' +
-          'background:#9aa9a2;' +
-          'border:3px solid white;' +
-          'box-shadow:0 2px 5px #777">' +
-
-          '<span style="' +
-          'display:block;' +
-          'width:6px;' +
-          'height:6px;' +
-          'background:white;' +
-          'border-radius:50%;' +
-          'margin:5px auto">' +
-
-          '</span></div>',
-
-        iconSize:[22,22],
-        iconAnchor:[11,21]
-      });
-    }
-
-    const background =
-      colors.length === 1
-      ? colors[0]
-      :
-      "conic-gradient(" +
-      colors.map(function(color,index){
-
-        return (
-          color + " " +
-          (index * 100 / colors.length) +
-          "% " +
-          ((index + 1) * 100 / colors.length) +
-          "%"
-        );
-
-      }).join(",") +
-      ")";
-
-    return L.divIcon({
-
-      className:"",
-
-      html:
-        '<div style="' +
-        'width:22px;' +
-        'height:22px;' +
-        'border-radius:50% 50% 50% 0;' +
-        'transform:rotate(-45deg);' +
-        'background:'+background+';' +
-        'border:3px solid white;' +
-        'box-shadow:0 2px 5px #777">' +
-
-        '<span style="' +
-        'display:block;' +
-        'width:6px;' +
-        'height:6px;' +
-        'background:white;' +
-        'border-radius:50%;' +
-        'margin:5px auto">' +
-
-        '</span></div>',
-
-      iconSize:[22,22],
-      iconAnchor:[11,21]
-
-    });
-  }
-
-  /* ---------------------------------------------------------
-     FILTER
-     --------------------------------------------------------- */
-
-  function filteredV27(){
-
-    const searchEl =
-      document.getElementById("search");
-
-    const statusEl =
-      document.getElementById("statusFilter");
-
-    const typeEl =
-      document.getElementById("typeFilter");
-
-    const q =
-      String(searchEl?.value || "").toLowerCase();
-
-    const s =
-      statusEl?.value || "all";
-
-    const t =
-      typeEl?.value || "all";
-
-    return (companies || []).filter(function(company){
-
-      const products =
-        productsForCompany(company);
-
-      const searchText =
-        [
-          company.name,
-          company.location,
-          company.commodity,
-          company.commodities,
-          company.product,
-          products.join(" ")
-        ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return (
-
-        (!q || searchText.includes(q)) &&
-
-        (s === "all" ||
-         company.status === s) &&
-
-        (t === "all" ||
-         (company.type || "").includes(t)) &&
-
-        (
-          selectedProduct === "all" ||
-          products.includes(selectedProduct)
-        )
-
-      );
-
-    });
-  }
-
-  /* ---------------------------------------------------------
-     SAVE ORIGINAL MAP FUNCTION BEFORE OVERRIDING
-     --------------------------------------------------------- */
-
-  const originalRefreshMap =
-    typeof window.refreshMap === "function"
-      ? window.refreshMap
-      : null;
-
-  /* ---------------------------------------------------------
-     SAFE MAP REFRESH
-     --------------------------------------------------------- */
-
-  function safeRefreshMap(){
-
-    try{
-
-      if(typeof window.refreshMap === "function"){
-        window.refreshMap();
-      }
-
-    }catch(error){
-
-      console.error(
-        "V27 map refresh error:",
-        error
-      );
-
-      if(typeof originalRefreshMap === "function"){
-
-        try{
-          originalRefreshMap();
-        }catch(e){
-          console.error(
-            "Original map refresh failed:",
-            e
-          );
-        }
-
-      }
-
-    }
-  }
-
-  /* ---------------------------------------------------------
-     V27 MAP REFRESH
-     --------------------------------------------------------- */
-
-  window.refreshMap = function(){
-
-    if(
-      typeof map === "undefined" ||
-      !map
-    ){
-      return;
-    }
-
-    if(
-      typeof markers === "undefined" ||
-      !Array.isArray(markers)
-    ){
-      return;
-    }
-
-    try{
-
-      markers.forEach(function(marker){
-
-        try{
-          map.removeLayer(marker);
-        }catch(e){}
-
-      });
-
-      markers.length = 0;
-
-      filteredV27().forEach(function(company){
-
-        const keys =
-          productsForCompany(company);
-
-        const pinKeys =
-          selectedProduct === "all"
-            ? keys
-            : [selectedProduct];
-
-        const lat =
-          Number(company.lat);
-
-        const lon =
-          Number(company.lon);
-
-        if(
-          !Number.isFinite(lat) ||
-          !Number.isFinite(lon)
-        ){
-          return;
-        }
-
-        const marker =
-          L.marker(
-            [lat,lon],
-            {
-              icon:
-                buildIconForProducts(pinKeys)
-            }
-          ).addTo(map);
-
-        marker.bindTooltip(
-          escV27(company.name || ""),
-          {
-            direction:"top"
-          }
-        );
-
-        marker.on(
-          "click",
-          function(){
-            if(
-              typeof showDetail === "function"
-            ){
-              showDetail(company);
-            }
-          }
-        );
-
-        markers.push(marker);
-
-      });
-
-    }catch(error){
-
-      console.error(
-        "V27 refreshMap failed:",
-        error
-      );
-
-      /* Fall back to V26 map if V27 encounters an error. */
-
-      if(
-        originalRefreshMap &&
-        originalRefreshMap !== window.refreshMap
-      ){
-
-        try{
-          originalRefreshMap();
-        }catch(e){
-          console.error(
-            "V26 refreshMap fallback failed:",
-            e
-          );
-        }
-
-      }
-
-    }
-
-  };
-
-  /* ---------------------------------------------------------
-     DASHBOARD RENDER
-     --------------------------------------------------------- */
-
-  function renderV27Dashboard(){
-
+  function init(){
+    wrapMapRefresh();
     installDashboard();
-
-    const tabs =
-      document.getElementById(
-        "v27ProductTabs"
-      );
-
-    const summary =
-      document.getElementById(
-        "v27ProductSummary"
-      );
-
-    const list =
-      document.getElementById(
-        "v27ProductCompanies"
-      );
-
-    if(!tabs || !summary || !list){
-      return;
-    }
-
-    /* Tabs */
-
-    tabs.innerHTML =
-      '<button class="v27-product-tab ' +
-      (selectedProduct === "all"
-        ? "active"
-        : "") +
-      '" data-product="all">' +
-      'All Products' +
-      '</button>' +
-
-      Object.keys(PRODUCTS)
-        .map(function(key){
-
-          const p = PRODUCTS[key];
-
-          return (
-            '<button class="v27-product-tab ' +
-            (selectedProduct === key
-              ? "active"
-              : "") +
-            '" data-product="'+key+'">' +
-
-            '<span class="v27-dot" ' +
-            'style="background:'+p.color+'"></span>' +
-
-            p.icon + " " +
-            escV27(p.name) +
-
-            '</button>'
-          );
-
-        })
-        .join("");
-
-    tabs
-      .querySelectorAll(".v27-product-tab")
-      .forEach(function(button){
-
-        button.addEventListener(
-          "click",
-          function(){
-
-            selectedProduct =
-              this.dataset.product;
-
-            const select =
-              document.getElementById(
-                "v27MapProductSelect"
-              );
-
-            if(select){
-              select.value =
-                selectedProduct;
-            }
-
-            renderV27Dashboard();
-            safeRefreshMap();
-
-          }
-        );
-
-      });
-
-    /* Product summary cards */
-
-    summary.innerHTML =
-      Object.keys(PRODUCTS)
-        .map(function(key){
-
-          const p = PRODUCTS[key];
-
-          const count =
-            companiesForProduct(key).length;
-
-          return (
-            '<div class="v27-product-card ' +
-            (selectedProduct === key
-              ? "active"
-              : "") +
-            '" data-product-card="'+key+'">' +
-
-            '<div class="v27-product-name">' +
-
-            '<span class="v27-dot" ' +
-            'style="background:'+p.color+'"></span>' +
-
-            p.icon + " " +
-            escV27(p.name) +
-
-            '</div>' +
-
-            '<div class="v27-product-count">' +
-            count +
-            '</div>' +
-
-            '<div style="' +
-            'font-size:9px;' +
-            'color:#6b7d74">' +
-
-            'Companies / organizations' +
-
-            '</div>' +
-
-            '</div>'
-          );
-
-        })
-        .join("");
-
-    summary
-      .querySelectorAll(
-        "[data-product-card]"
-      )
-      .forEach(function(card){
-
-        card.addEventListener(
-          "click",
-          function(){
-
-            selectedProduct =
-              this.dataset.productCard;
-
-            const select =
-              document.getElementById(
-                "v27MapProductSelect"
-              );
-
-            if(select){
-              select.value =
-                selectedProduct;
-            }
-
-            renderV27Dashboard();
-            safeRefreshMap();
-
-          }
-        );
-
-      });
-
-    /* Company list */
-
-    const rows =
-      companiesForProduct(
-        selectedProduct
-      );
-
-    if(!rows.length){
-
-      list.innerHTML =
-        '<div class="v27-product-empty" ' +
-        'style="grid-column:1/-1">' +
-
-        'No companies are currently tagged ' +
-        'under this product.' +
-
-        '</div>';
-
-      return;
-    }
-
-    list.innerHTML =
-      rows
-        .map(function(company){
-
-          const keys =
-            productsForCompany(company);
-
-          return (
-            '<div class="v27-company-item" ' +
-            'data-company-id="' +
-            escV27(company.id) +
-            '">' +
-
-            '<b>' +
-            escV27(company.name) +
-            '</b>' +
-
-            '<div style="' +
-            'font-size:10px;' +
-            'color:#6b7d74;' +
-            'margin-top:3px">' +
-
-            escV27(company.type || "") +
-
-            ' • ' +
-
-            escV27(company.location || "") +
-
-            '</div>' +
-
-            '<div class="v27-company-product-row">' +
-
-            (
-              keys.length
-                ? keys
-                    .map(productChip)
-                    .join("")
-                :
-                  '<span style="' +
-                  'font-size:9px;' +
-                  'color:#8a9b93">' +
-                  'Product not yet tagged' +
-                  '</span>'
-            ) +
-
-            '</div>' +
-
-            '<div style="' +
-            'font-size:10px;' +
-            'margin-top:7px">' +
-
-            '<b>Status:</b> ' +
-            escV27(company.status || "") +
-
-            ' &nbsp; <b>Volume:</b> ' +
-
-            escV27(
-              company.volume || "TBD"
-            ) +
-
-            '</div>' +
-
-            '</div>'
-          );
-
-        })
-        .join("");
-
-    list
-      .querySelectorAll(
-        "[data-company-id]"
-      )
-      .forEach(function(element){
-
-        element.addEventListener(
-          "click",
-          function(){
-
-            const company =
-              (companies || []).find(
-                function(item){
-                  return String(item.id) ===
-                    String(
-                      element.dataset.companyId
-                    );
-                }
-              );
-
-            if(!company) return;
-
-            if(
-              typeof showDetail === "function"
-            ){
-              showDetail(company);
-            }
-
-            if(
-              typeof map !== "undefined" &&
-              map &&
-              Number.isFinite(
-                Number(company.lat)
-              ) &&
-              Number.isFinite(
-                Number(company.lon)
-              )
-            ){
-
-              map.setView(
-                [
-                  Number(company.lat),
-                  Number(company.lon)
-                ],
-                11
-              );
-
-            }
-
-          }
-        );
-
-      });
-
+    installMapControls();
+    renderDashboard();
+    applyMapProductFilter();
   }
 
-  /* ---------------------------------------------------------
-     PRODUCT INPUTS
-     --------------------------------------------------------- */
+  /*
+   * Wait for the existing V25/V26 app to create its authenticated
+   * dashboard/map. This observer disconnects as soon as those elements
+   * exist, so it cannot loop forever.
+   */
+  function watchForApp(){
+    if (!document.body || dashboardObserver) return;
 
-  function enhanceCommodityInputs(){
+    dashboardObserver = new MutationObserver(function(){
+      const dashboard = document.getElementById("dashboard");
 
-    [
-      "cCommodity",
-      "editCommodity"
-    ]
-    .forEach(function(id){
+      if (dashboard){
+        if (dashboardRefreshTimer) clearTimeout(dashboardRefreshTimer);
 
-      const input =
-        document.getElementById(id);
-
-      if(
-        !input ||
-        input.dataset.v27Enhanced === "1"
-      ){
-        return;
+        dashboardRefreshTimer = setTimeout(function(){
+          init();
+        },50);
       }
-
-      input.dataset.v27Enhanced = "1";
-
-      input.placeholder =
-        "Select product(s) or enter other commodity";
-
-      const box =
-        document.createElement("div");
-
-      box.style.cssText =
-        "display:flex;" +
-        "flex-wrap:wrap;" +
-        "gap:7px;" +
-        "margin-top:6px";
-
-      Object.keys(PRODUCTS)
-        .forEach(function(key){
-
-          const p = PRODUCTS[key];
-
-          const label =
-            document.createElement("label");
-
-          label.style.cssText =
-            "display:inline-flex;" +
-            "align-items:center;" +
-            "gap:4px;" +
-            "font-size:10px;" +
-            "font-weight:700;" +
-            "border:1px solid #d9e8df;" +
-            "border-radius:8px;" +
-            "padding:5px 7px;" +
-            "background:#fff;" +
-            "cursor:pointer";
-
-          label.innerHTML =
-            '<input type="checkbox" ' +
-            'data-v27-product="'+key+'"> ' +
-
-            p.icon + " " +
-            escV27(p.name);
-
-          box.appendChild(label);
-
-        });
-
-      input.insertAdjacentElement(
-        "afterend",
-        box
-      );
-
-      box
-        .querySelectorAll(
-          "input[data-v27-product]"
-        )
-        .forEach(function(checkbox){
-
-          checkbox.addEventListener(
-            "change",
-            function(){
-
-              const selected =
-                Array.from(
-                  box.querySelectorAll(
-                    "input:checked"
-                  )
-                )
-                .map(function(item){
-
-                  return PRODUCTS[
-                    item.dataset.v27Product
-                  ].name;
-
-                });
-
-              if(selected.length){
-
-                input.value =
-                  selected.join(", ");
-
-              }
-
-            }
-          );
-
-        });
-
     });
 
-  }
-
-  /* ---------------------------------------------------------
-     FILTER EVENTS
-     --------------------------------------------------------- */
-
-  function bindFilterEvents(){
-
-    [
-      "search",
-      "statusFilter",
-      "typeFilter"
-    ]
-    .forEach(function(id){
-
-      const element =
-        document.getElementById(id);
-
-      if(
-        !element ||
-        element.dataset.v27Bound === "1"
-      ){
-        return;
-      }
-
-      element.dataset.v27Bound = "1";
-
-      element.addEventListener(
-        "input",
-        function(){
-
-          renderV27Dashboard();
-          safeRefreshMap();
-
-        }
-      );
-
-      element.addEventListener(
-        "change",
-        function(){
-
-          renderV27Dashboard();
-          safeRefreshMap();
-
-        }
-      );
-
+    dashboardObserver.observe(document.body,{
+      childList:true,
+      subtree:true
     });
 
+    const dashboard = document.getElementById("dashboard");
+    if (dashboard) init();
   }
 
-  /* ---------------------------------------------------------
-     SAFE INITIALIZATION
-     --------------------------------------------------------- */
-
-  let initialized = false;
-
-  function initV27(){
-
-    installDashboard();
-    installMapFilter();
-    enhanceCommodityInputs();
-    bindFilterEvents();
-
-    renderV27Dashboard();
-
-    initialized = true;
-
-    /*
-      Refresh map only when it already exists.
-      This prevents errors during login/startup.
-    */
-
-    if(
-      typeof map !== "undefined" &&
-      map
-    ){
-      safeRefreshMap();
-    }
-
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded",watchForApp,{once:true});
+  } else {
+    watchForApp();
   }
 
-  /* ---------------------------------------------------------
-     INITIAL START
-     --------------------------------------------------------- */
-
-  function startV27(){
-
-    try{
-      initV27();
-    }catch(error){
-
-      console.error(
-        "V27 initialization error:",
-        error
-      );
-
-    }
-
-  }
-
-  if(
-    document.readyState === "loading"
-  ){
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      startV27,
-      {once:true}
-    );
-
-  }else{
-
-    startV27();
-
-  }
-
-  /* ---------------------------------------------------------
-     SAFE RECHECK AFTER V26 CLOUD DATA LOAD
-     IMPORTANT:
-     This observer DOES NOT rerender continuously.
-     It only acts when the V27 panel is missing.
-     --------------------------------------------------------- */
-
-  if(document.body){
-
-    const observer =
-      new MutationObserver(function(){
-
-        const dashboard =
-          document.getElementById("dashboard");
-
-        if(
-          dashboard &&
-          !document.getElementById(
-            "v27ProductDashboard"
-          )
-        ){
-
-          setTimeout(function(){
-
-            try{
-              initV27();
-            }catch(error){
-              console.error(
-                "V27 reinitialization error:",
-                error
-              );
-            }
-
-          },50);
-
-        }
-
-      });
-
-    observer.observe(
-      document.body,
-      {
-        childList:true,
-        subtree:true
-      }
-    );
-
-  }
-
-  /* ---------------------------------------------------------
-     FINAL DELAYED CHECK
-     --------------------------------------------------------- */
-
+  /*
+   * Keep the base app safe if its render() function rebuilds #dashboard.
+   * This timer is intentionally limited and only runs while the page is open.
+   */
   setTimeout(function(){
-
-    try{
-
-      if(
-        !document.getElementById(
-          "v27ProductDashboard"
-        )
-      ){
-
-        initV27();
-
-      }else{
-
-        enhanceCommodityInputs();
-        bindFilterEvents();
-
-      }
-
-      if(
-        typeof map !== "undefined" &&
-        map
-      ){
-
-        safeRefreshMap();
-
-      }
-
-    }catch(error){
-
-      console.error(
-        "V27 final initialization error:",
-        error
-      );
-
+    try { init(); } catch(e) {
+      console.error("V27 initialization:",e);
     }
-
-  },1000);
+  },1500);
 
 })();
 </script>
