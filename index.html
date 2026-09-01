@@ -1207,7 +1207,7 @@ BASE: Working V26/V27 application with the approved authentication, Supabase,
 photo-caption, report, pipeline and company functions.
 
 IMPORTANT:
-This is a PATCH. Add this entire file immediately before </body> of the
+This is a PATCH. Add this entire file immediately before of the
 COMPLETE working application. Do NOT deploy this patch by itself.
 
 V28 fixes the product layer by:
@@ -1230,10 +1230,10 @@ Ube = Purple
 
 <style id="v28-product-dashboard-map-css">
 .v28-product-panel{margin-top:13px}
-.v28-product-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 14px}
-.v28-product-tab{border:1px solid #d9e8df;background:#fff;color:#315347;border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800;cursor:pointer}
-.v28-product-tab:hover{border-color:#08783f}
-.v28-product-tab.active{background:#08783f;color:#fff;border-color:#08783f}
+
+
+
+
 .v28-product-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .v28-product-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:14px}
 .v28-product-card{background:#fff;border:1px solid #d9e8df;border-radius:10px;padding:11px;cursor:pointer;transition:.15s}
@@ -1430,7 +1430,6 @@ Ube = Purple
       panel.className="panel v28-product-panel";
       panel.innerHTML=
         '<div class="panel-title">🌾 Crop / Product Development</div>'+ 
-        '<div id="v28ProductTabs" class="v28-product-tabs"></div>'+ 
         '<div id="v28ProductSummary" class="v28-product-summary"></div>'+ 
         '<div id="v28ProductCompanies" class="v28-company-list"></div>';
       dashboard.appendChild(panel);
@@ -1442,19 +1441,9 @@ Ube = Purple
     if(!document.getElementById("dashboard")) return;
     installDashboard();
 
-    const tabs=document.getElementById("v28ProductTabs");
     const summary=document.getElementById("v28ProductSummary");
     const list=document.getElementById("v28ProductCompanies");
-    if(!tabs||!summary||!list) return;
-
-    tabs.innerHTML='<button type="button" class="v28-product-tab '+(selectedProduct==="all"?"active":"")+'" data-v28-product="all">All Products</button>'+Object.keys(PRODUCTS).map(function(key){
-      const p=PRODUCTS[key];
-      return '<button type="button" class="v28-product-tab '+(selectedProduct===key?"active":"")+'" data-v28-product="'+key+'"><span class="v28-product-dot" style="background:'+p.color+'"></span>'+p.icon+' '+esc(p.name)+'</button>';
-    }).join("");
-
-    tabs.querySelectorAll("[data-v28-product]").forEach(function(btn){
-      btn.addEventListener("click",function(){setProduct(this.dataset.v28Product);});
-    });
+    if(!summary||!list) return;
 
     summary.innerHTML=Object.keys(PRODUCTS).map(function(key){
       const p=PRODUCTS[key];
@@ -1661,8 +1650,6 @@ Ube = Purple
   }
 })();
 </script>
-</body>
-
 <script id="stellar-seeds-reference-pin">
 (function () {
   "use strict";
@@ -1739,5 +1726,5 @@ Ube = Purple
   }
 })();
 </script>
-
+</body>
 </html>
