@@ -1662,4 +1662,86 @@ Ube = Purple
 })();
 </script>
 </body>
+
+<script id="stellar-seeds-reference-pin">
+(function () {
+  "use strict";
+
+  var STELLAR_LAT = 6.163729726185922;
+  var STELLAR_LNG = 125.11395682116496;
+  var STELLAR_GREEN = "#16823b";
+
+  function addStellarSeedsPin() {
+    if (typeof L === "undefined" || typeof map === "undefined" || !map) {
+      return false;
+    }
+
+    // Prevent duplicates if the app/map is initialized more than once.
+    if (window.__stellarSeedsReferenceMarker) {
+      try {
+        if (map.hasLayer(window.__stellarSeedsReferenceMarker)) return true;
+        window.__stellarSeedsReferenceMarker.addTo(map);
+        return true;
+      } catch (e) {}
+    }
+
+    var icon = L.divIcon({
+      className: "stellar-seeds-reference-icon",
+      html:
+        '<div style="' +
+        'width:24px;height:24px;border-radius:50% 50% 50% 0;' +
+        'transform:rotate(-45deg);' +
+        'background:' + STELLAR_GREEN + ';' +
+        'border:3px solid #fff;' +
+        'box-shadow:0 2px 7px rgba(0,0,0,.35);' +
+        '">' +
+        '<span style="' +
+        'display:block;width:7px;height:7px;background:#fff;' +
+        'border-radius:50%;margin:6px auto' +
+        '"></span></div>',
+      iconSize: [24, 24],
+      iconAnchor: [12, 23],
+      popupAnchor: [0, -22]
+    });
+
+    var marker = L.marker([STELLAR_LAT, STELLAR_LNG], {
+      icon: icon,
+      zIndexOffset: 10000,
+      title: "Stellar Seeds Corporation"
+    }).addTo(map);
+
+    marker.bindTooltip("Stellar Seeds Corporation", {
+      direction: "top",
+      offset: [0, -10],
+      permanent: false
+    });
+
+    marker.bindPopup(
+      "<b>Stellar Seeds Corporation</b><br>" +
+      "Reference Location<br>" +
+      "6.1637297262, 125.1139568212"
+    );
+
+    window.__stellarSeedsReferenceMarker = marker;
+    return true;
+  }
+
+  function waitForMap() {
+    var tries = 0;
+    var timer = setInterval(function () {
+      tries++;
+      if (addStellarSeedsPin() || tries >= 40) {
+        clearInterval(timer);
+      }
+    }, 250);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", waitForMap, { once: true });
+  } else {
+    waitForMap();
+  }
+})();
+</script>
+
 </html>
