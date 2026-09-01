@@ -1,3 +1,100 @@
+<script>
+(function () {
+  "use strict";
+
+  const STYLE_ID = "v26-safe-photo-caption-fix";
+
+  function installStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      .photo-caption {
+        text-align: center !important;
+      }
+
+      .photo-viewer-caption {
+        text-align: center !important;
+      }
+
+      .photo-viewer-caption.empty-caption {
+        display: none !important;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function cleanCaption(caption) {
+    if (!caption) return;
+
+    const text = (caption.textContent || "").trim();
+
+    if (!text || text === "No caption added.") {
+      caption.textContent = "";
+      caption.classList.add("empty-caption");
+    } else {
+      caption.classList.remove("empty-caption");
+      caption.style.textAlign = "center";
+    }
+  }
+
+  function cleanGallery(gallery) {
+    if (!gallery) return;
+
+    gallery
+      .querySelectorAll(".photo-viewer-caption")
+      .forEach(cleanCaption);
+  }
+
+  function attachToGallery(gallery) {
+    if (!gallery || gallery.dataset.v26CaptionFix === "1") return;
+
+    gallery.dataset.v26CaptionFix = "1";
+    cleanGallery(gallery);
+
+    const observer = new MutationObserver(function () {
+      cleanGallery(gallery);
+    });
+
+    observer.observe(gallery, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  function init() {
+    installStyle();
+
+    // Week 1 gallery
+    attachToGallery(document.getElementById("week1Gallery"));
+
+    // Dynamic weekly-report galleries
+    document.querySelectorAll(".photo-gallery").forEach(attachToGallery);
+  }
+
+  // Initial page load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+
+  // Catch galleries created dynamically by V25.
+  const pageObserver = new MutationObserver(function () {
+    init();
+  });
+
+  if (document.body) {
+    pageObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+})();
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
