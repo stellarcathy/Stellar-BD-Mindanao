@@ -1202,4 +1202,410 @@ document.querySelectorAll("#weeklyReportArchiveList .report-item").forEach(b=>b.
 (function(){const b=document.querySelector(".brand img");if(b)document.getElementById("authLogo").src=b.src;})();
 </script>
 </body>
+  <!--
+STELLAR BD MINDANAO V28 — PRODUCT DASHBOARD + MAP PINNING PATCH
+BASE: Working V26/V27 application with the approved authentication, Supabase,
+photo-caption, report, pipeline and company functions.
+
+IMPORTANT:
+This is a PATCH. Add this entire file immediately before </body> of the
+COMPLETE working application. Do NOT deploy this patch by itself.
+
+V28 fixes the product layer by:
+- Reading the existing app's lexical `companies` array (not only window.companies).
+- Reading the existing lexical `markers` and `map` objects safely.
+- Keeping the base refreshMap intact and wrapping it only after the base map refresh.
+- Keeping Dashboard product cards and Map product filter synchronized.
+- Applying product-colored pins after every base map refresh.
+- Supporting multi-product companies with a multi-color pin.
+- Refreshing the product dashboard after the base app's cloud data load/render.
+- Keeping authentication, Supabase schema, reports, photos and permissions untouched.
+
+Products:
+Commercial Corn = Yellow
+Coffee = Black
+Cacao = Brown
+Pepper = Orange
+Ube = Purple
+-->
+
+<style id="v28-product-dashboard-map-css">
+.v28-product-panel{margin-top:13px}
+.v28-product-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 14px}
+.v28-product-tab{border:1px solid #d9e8df;background:#fff;color:#315347;border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800;cursor:pointer}
+.v28-product-tab:hover{border-color:#08783f}
+.v28-product-tab.active{background:#08783f;color:#fff;border-color:#08783f}
+.v28-product-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.v28-product-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:14px}
+.v28-product-card{background:#fff;border:1px solid #d9e8df;border-radius:10px;padding:11px;cursor:pointer;transition:.15s}
+.v28-product-card:hover{border-color:#08783f;transform:translateY(-1px)}
+.v28-product-card.active{border-color:#08783f;box-shadow:0 0 0 2px rgba(8,120,63,.08)}
+.v28-product-name{font-size:11px;font-weight:800;line-height:1.3}
+.v28-product-count{font-size:23px;font-weight:850;margin-top:5px;color:#16352a}
+.v28-product-meta{font-size:9px;color:#6b7d74;margin-top:2px}
+.v28-product-stats{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.v28-stat{font-size:9px;border:1px solid #e0ebe5;border-radius:999px;padding:3px 6px;background:#f8fcfa;color:#51665d}
+.v28-company-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.v28-company-item{background:#fff;border:1px solid #e0ebe5;border-radius:10px;padding:10px;cursor:pointer}
+.v28-company-item:hover{border-color:#08783f}
+.v28-company-products{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.v28-product-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:800;border:1px solid #d9e8df;background:#f8fcfa}
+.v28-empty{padding:16px;text-align:center;color:#6b7d74;border:1px dashed #cbded4;border-radius:10px;grid-column:1/-1}
+.v28-map-filter{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0 5px}
+.v28-map-filter label{font-size:10px;font-weight:800;color:#51665d}
+.v28-map-filter select{border:1px solid #d9e8df;border-radius:8px;padding:7px 9px;background:#fff;color:#315347;font-size:11px}
+.v28-map-note{font-size:9px;color:#6b7d74}
+.v28-map-legend{display:flex;flex-wrap:wrap;gap:9px;font-size:9px;color:#51665d;margin:4px 0 10px}
+.v28-map-legend span{display:inline-flex;align-items:center;gap:4px}
+.v28-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+@media(max-width:1000px){.v28-product-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.v28-product-summary,.v28-company-list{grid-template-columns:1fr}}
+</style>
+
+<script id="v28-product-dashboard-map-patch">
+(function(){
+  "use strict";
+
+  if(window.__STELLAR_BD_V28_PRODUCT_PATCH__) return;
+  window.__STELLAR_BD_V28_PRODUCT_PATCH__ = true;
+
+  const PRODUCTS = {
+    corn:{name:"Commercial Corn",color:"#f2c400",icon:"🌽"},
+    coffee:{name:"Coffee",color:"#111111",icon:"☕"},
+    cacao:{name:"Cacao",color:"#7a4b2a",icon:"🍫"},
+    pepper:{name:"Pepper",color:"#f28c18",icon:"🌶️"},
+    ube:{name:"Ube",color:"#7a3db8",icon:"🍠"}
+  };
+
+  let selectedProduct="all";
+  let refreshWrapped=false;
+  let renderWrapped=false;
+  let initTimer=null;
+
+  function esc(value){
+    return String(value==null?"":value).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /*
+   * The base application uses a top-level `let`/`const` companies array.
+   * Such a binding is not necessarily exposed as window.companies.
+   * `typeof companies` safely accesses it when it exists and avoids a
+   * ReferenceError when this patch loads before the base app.
+   */
+  function getCompanies(){
+    try{
+      if(typeof companies!=="undefined" && Array.isArray(companies)) return companies;
+    }catch(e){}
+    return Array.isArray(window.companies)?window.companies:[];
+  }
+
+  function getMap(){
+    try{
+      if(typeof map!=="undefined" && map) return map;
+    }catch(e){}
+    return window.map||null;
+  }
+
+  function getMarkers(){
+    try{
+      if(typeof markers!=="undefined" && Array.isArray(markers)) return markers;
+    }catch(e){}
+    return Array.isArray(window.markers)?window.markers:[];
+  }
+
+  function productKeys(company){
+    if(!company) return [];
+
+    const raw=[
+      company.commodity,
+      company.commodities,
+      company.product
+    ].filter(Boolean).join(" ").toLowerCase()
+      .replace(/purple\s*yam/g,"ube")
+      .replace(/commercial\s+corn/g,"corn")
+      .replace(/feed[-\s]*grade\s+corn/g,"corn")
+      .replace(/wet\s+corn\s+cobs?/g,"corn")
+      .replace(/corn\s+cobs?/g,"corn");
+
+    const keys=[];
+    if(/\bcorn\b/.test(raw)) keys.push("corn");
+    if(/\bcoffee\b/.test(raw)) keys.push("coffee");
+    if(/\bcacao\b|\bcocoa\b/.test(raw)) keys.push("cacao");
+    if(/\bpepper\b/.test(raw)) keys.push("pepper");
+    if(/\bube\b/.test(raw)) keys.push("ube");
+    return [...new Set(keys)];
+  }
+
+  function companiesFor(key){
+    const list=getCompanies();
+    if(key==="all") return list;
+    return list.filter(function(company){return productKeys(company).includes(key);});
+  }
+
+  function statusIsActive(status){
+    const s=String(status||"").toLowerCase();
+    return ["new lead","prospect","initial inquiry","active discussion","under evaluation","ongoing","trial completed"].includes(s);
+  }
+
+  function companyByMarker(marker){
+    if(!marker || typeof marker.getLatLng!=="function") return null;
+    const pos=marker.getLatLng();
+    if(!pos) return null;
+
+    return getCompanies().find(function(c){
+      const lat=Number(c.lat),lon=Number(c.lon);
+      return Number.isFinite(lat)&&Number.isFinite(lon)&&
+        Math.abs(lat-Number(pos.lat))<0.00001&&
+        Math.abs(lon-Number(pos.lng))<0.00001;
+    })||null;
+  }
+
+  function pinIcon(keys){
+    const colors=(keys||[]).map(function(k){return PRODUCTS[k]&&PRODUCTS[k].color;}).filter(Boolean);
+    const background=colors.length===1?colors[0]:
+      colors.length>1?"conic-gradient("+colors.map(function(c,i){
+        return c+" "+(i*100/colors.length)+"% "+((i+1)*100/colors.length)+"%";
+      }).join(",")+")":"#9aa9a2";
+
+    return L.divIcon({
+      className:"",
+      html:'<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+background+';border:3px solid #fff;box-shadow:0 2px 5px #777"><span style="display:block;width:6px;height:6px;background:#fff;border-radius:50%;margin:5px auto"></span></div>',
+      iconSize:[22,22],
+      iconAnchor:[11,21]
+    });
+  }
+
+  function applyMapProductFilter(){
+    const m=getMap();
+    const list=getMarkers();
+    if(!m || !Array.isArray(list) || typeof L==="undefined") return;
+
+    list.forEach(function(marker){
+      const company=companyByMarker(marker);
+      const keys=company?productKeys(company):[];
+      const matches=selectedProduct==="all"||keys.includes(selectedProduct);
+
+      if(matches){
+        if(typeof marker.setIcon==="function"){
+          marker.setIcon(pinIcon(selectedProduct==="all"?keys:[selectedProduct]));
+        }
+        if(typeof m.hasLayer==="function" && !m.hasLayer(marker) && typeof marker.addTo==="function") marker.addTo(m);
+      }else if(typeof m.hasLayer==="function" && m.hasLayer(marker)){
+        m.removeLayer(marker);
+      }
+    });
+  }
+
+  function syncMapSelect(){
+    const select=document.getElementById("v28MapProductSelect");
+    if(select) select.value=selectedProduct;
+  }
+
+  function setProduct(key){
+    selectedProduct=PRODUCTS[key]?key:"all";
+    syncMapSelect();
+    renderDashboard();
+    refreshBaseMap();
+  }
+
+  function refreshBaseMap(){
+    try{
+      if(typeof window.refreshMap==="function") window.refreshMap();
+      else applyMapProductFilter();
+    }catch(e){
+      console.error("V28 map refresh:",e);
+      applyMapProductFilter();
+    }
+  }
+
+  function installDashboard(){
+    const dashboard=document.getElementById("dashboard");
+    if(!dashboard) return null;
+
+    let panel=document.getElementById("v28ProductDashboard");
+    if(!panel){
+      panel=document.createElement("div");
+      panel.id="v28ProductDashboard";
+      panel.className="panel v28-product-panel";
+      panel.innerHTML=
+        '<div class="panel-title">🌾 Crop / Product Development</div>'+ 
+        '<div id="v28ProductTabs" class="v28-product-tabs"></div>'+ 
+        '<div id="v28ProductSummary" class="v28-product-summary"></div>'+ 
+        '<div id="v28ProductCompanies" class="v28-company-list"></div>';
+      dashboard.appendChild(panel);
+    }
+    return panel;
+  }
+
+  function renderDashboard(){
+    if(!document.getElementById("dashboard")) return;
+    installDashboard();
+
+    const tabs=document.getElementById("v28ProductTabs");
+    const summary=document.getElementById("v28ProductSummary");
+    const list=document.getElementById("v28ProductCompanies");
+    if(!tabs||!summary||!list) return;
+
+    tabs.innerHTML='<button type="button" class="v28-product-tab '+(selectedProduct==="all"?"active":"")+'" data-v28-product="all">All Products</button>'+Object.keys(PRODUCTS).map(function(key){
+      const p=PRODUCTS[key];
+      return '<button type="button" class="v28-product-tab '+(selectedProduct===key?"active":"")+'" data-v28-product="'+key+'"><span class="v28-product-dot" style="background:'+p.color+'"></span>'+p.icon+' '+esc(p.name)+'</button>';
+    }).join("");
+
+    tabs.querySelectorAll("[data-v28-product]").forEach(function(btn){
+      btn.addEventListener("click",function(){setProduct(this.dataset.v28Product);});
+    });
+
+    summary.innerHTML=Object.keys(PRODUCTS).map(function(key){
+      const p=PRODUCTS[key];
+      const rows=companiesFor(key);
+      const customers=rows.filter(function(c){return /customer/i.test(String(c.type||""));}).length;
+      const suppliers=rows.filter(function(c){return /supplier|cooperative|farm/i.test(String(c.type||""));}).length;
+      const active=rows.filter(function(c){return statusIsActive(c.status);}).length;
+      return '<div class="v28-product-card '+(selectedProduct===key?"active":"")+'" data-v28-card="'+key+'">'+
+        '<div class="v28-product-name"><span class="v28-product-dot" style="background:'+p.color+'"></span>'+p.icon+' '+esc(p.name)+'</div>'+
+        '<div class="v28-product-count">'+rows.length+'</div>'+ 
+        '<div class="v28-product-meta">Companies / organizations</div>'+ 
+        '<div class="v28-product-stats">'+
+          '<span class="v28-stat">Active: '+active+'</span>'+ 
+          '<span class="v28-stat">Customers: '+customers+'</span>'+ 
+          '<span class="v28-stat">Supply: '+suppliers+'</span>'+ 
+        '</div>'+ 
+      '</div>';
+    }).join("");
+
+    summary.querySelectorAll("[data-v28-card]").forEach(function(card){
+      card.addEventListener("click",function(){setProduct(this.dataset.v28Card);});
+    });
+
+    const rows=companiesFor(selectedProduct);
+    if(!rows.length){
+      list.innerHTML='<div class="v28-empty">No companies are currently tagged under this product.</div>';
+      return;
+    }
+
+    list.innerHTML=rows.map(function(company){
+      const keys=productKeys(company);
+      return '<div class="v28-company-item" data-v28-company="'+esc(company.id||"")+'">'+
+        '<b>'+esc(company.name||"")+'</b>'+ 
+        '<div style="font-size:10px;color:#6b7d74;margin-top:3px">'+esc(company.type||"")+(company.location?' • '+esc(company.location):"")+'</div>'+ 
+        '<div class="v28-company-products">'+keys.map(function(key){
+          const p=PRODUCTS[key];
+          return '<span class="v28-product-chip"><span class="v28-product-dot" style="background:'+p.color+'"></span>'+esc(p.name)+'</span>';
+        }).join("")+'</div>'+ 
+        '<div style="font-size:10px;margin-top:6px"><b>Status:</b> '+esc(company.status||"")+' &nbsp; <b>Volume:</b> '+esc(company.volume||"TBD")+'</div>'+ 
+      '</div>';
+    }).join("");
+
+    list.querySelectorAll("[data-v28-company]").forEach(function(item){
+      item.addEventListener("click",function(){
+        const id=this.dataset.v28Company;
+        const company=getCompanies().find(function(c){return String(c.id||"")===String(id);});
+        if(!company) return;
+        if(typeof window.showDetail==="function") window.showDetail(company);
+        const m=getMap();
+        if(m && Number.isFinite(Number(company.lat)) && Number.isFinite(Number(company.lon))){
+          m.setView([Number(company.lat),Number(company.lon)],11);
+        }
+      });
+    });
+  }
+
+  function installMapControls(){
+    const mapView=document.getElementById("map");
+    if(!mapView || document.getElementById("v28MapProductFilter")) return;
+    const panel=mapView.querySelector(".panel");
+    if(!panel) return;
+
+    const box=document.createElement("div");
+    box.id="v28MapProductFilter";
+    box.className="v28-map-filter";
+    box.innerHTML='<label>Product:</label><select id="v28MapProductSelect">'+
+      '<option value="all">All Products</option>'+ 
+      '<option value="corn">Commercial Corn</option>'+ 
+      '<option value="coffee">Coffee</option>'+ 
+      '<option value="cacao">Cacao</option>'+ 
+      '<option value="pepper">Pepper</option>'+ 
+      '<option value="ube">Ube</option>'+ 
+      '</select><span class="v28-map-note">Pin color = product • multi-product = multi-color</span>';
+
+    const title=panel.querySelector(".panel-title");
+    if(title) title.insertAdjacentElement("afterend",box); else panel.prepend(box);
+
+    const legend=document.createElement("div");
+    legend.className="v28-map-legend";
+    legend.innerHTML=Object.keys(PRODUCTS).map(function(key){
+      const p=PRODUCTS[key];
+      return '<span><i style="background:'+p.color+'"></i>'+esc(p.name)+'</span>';
+    }).join("");
+    box.insertAdjacentElement("afterend",legend);
+
+    const select=document.getElementById("v28MapProductSelect");
+    if(select){
+      select.value=selectedProduct;
+      select.addEventListener("change",function(){setProduct(this.value);});
+    }
+  }
+
+  function wrapRefreshMap(){
+    if(refreshWrapped || typeof window.refreshMap!=="function") return;
+    if(window.refreshMap.__v28Wrapped) {refreshWrapped=true;return;}
+
+    const base=window.refreshMap;
+    function wrapped(){
+      const result=base.apply(this,arguments);
+      try{applyMapProductFilter();}catch(e){console.error("V28 map styling:",e);}
+      return result;
+    }
+    wrapped.__v28Wrapped=true;
+    wrapped.__v28Original=base;
+    window.refreshMap=wrapped;
+    refreshWrapped=true;
+  }
+
+  function wrapRender(){
+    if(renderWrapped || typeof window.render!=="function") return;
+    if(window.render.__v28Wrapped){renderWrapped=true;return;}
+
+    const base=window.render;
+    function wrapped(){
+      const result=base.apply(this,arguments);
+      if(initTimer) clearTimeout(initTimer);
+      initTimer=setTimeout(function(){
+        installDashboard();
+        installMapControls();
+        renderDashboard();
+        applyMapProductFilter();
+      },0);
+      return result;
+    }
+    wrapped.__v28Wrapped=true;
+    wrapped.__v28Original=base;
+    window.render=wrapped;
+    renderWrapped=true;
+  }
+
+  function init(){
+    wrapRefreshMap();
+    wrapRender();
+    installDashboard();
+    installMapControls();
+    renderDashboard();
+    applyMapProductFilter();
+  }
+
+  function waitForBaseApp(){
+    init();
+    if(refreshWrapped && renderWrapped) return;
+    setTimeout(function(){
+      init();
+      if(!(refreshWrapped&&renderWrapped)) setTimeout(init,1200);
+    },300);
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",waitForBaseApp,{once:true});
+  else waitForBaseApp();
+})();
+</script>
 </html>
