@@ -1608,4 +1608,61 @@ Ube = Purple
   else waitForBaseApp();
 })();
 </script>
+</script>
+
+<!-- V18 REMOVE BUSINESS DEVELOPMENT SNAPSHOT -->
+<style>
+  #dashboard .v18-remove-snapshot-panel {
+    display: none !important;
+  }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  function removeBusinessDevelopmentSnapshot() {
+    var dashboard = document.getElementById("dashboard");
+    if (!dashboard) return;
+
+    var panels = dashboard.querySelectorAll(".panel");
+
+    for (var i = 0; i < panels.length; i++) {
+      var title = panels[i].querySelector(".panel-title");
+      if (!title) continue;
+
+      var text = (title.textContent || "").trim().toLowerCase();
+
+      if (text === "business development snapshot") {
+        panels[i].classList.add("v18-remove-snapshot-panel");
+        panels[i].remove();
+        return;
+      }
+    }
+  }
+
+  function startSnapshotRemoval() {
+    removeBusinessDevelopmentSnapshot();
+
+    var attempts = 0;
+    var timer = setInterval(function () {
+      removeBusinessDevelopmentSnapshot();
+      attempts++;
+
+      if (attempts >= 20) {
+        clearInterval(timer);
+      }
+    }, 250);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startSnapshotRemoval, { once: true });
+  } else {
+    startSnapshotRemoval();
+  }
+})();
+</script>
+
 </html>
+</html>
+
