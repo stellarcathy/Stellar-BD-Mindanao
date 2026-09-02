@@ -1273,6 +1273,23 @@ Pepper = Orange
 Ube = Purple
 -->
 
+
+<style id="v29-dashboard-company-modal-css">
+.v29-company-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.v29-company-modal.open{display:flex}
+.v29-company-modal-card{width:min(680px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:20px}
+.v29-company-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.v29-company-modal-head h2{margin:0;font-size:23px;color:#073b2a}
+.v29-company-close{border:0;background:transparent;font-size:28px;line-height:1;cursor:pointer;color:#52665d}
+.v29-company-sub{font-size:12px;color:#6b7d74;margin-top:4px}
+.v29-company-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.v29-company-field{border:1px solid #d9e8df;border-radius:10px;padding:10px;background:#fbfefc}
+.v29-company-field.full{grid-column:1/-1}
+.v29-company-field .lab{font-size:10px;font-weight:800;color:#08783f;text-transform:uppercase;margin-bottom:4px}
+.v29-company-field .val{font-size:13px;color:#17382c;line-height:1.45;white-space:pre-wrap}
+.v29-company-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}
+@media(max-width:650px){.v29-company-grid{grid-template-columns:1fr}.v29-company-field.full{grid-column:auto}}
+</style>
 <style id="v28-product-dashboard-map-css">
 .v28-product-panel{margin-top:13px}
 
@@ -1485,7 +1502,43 @@ Ube = Purple
     return panel;
   }
 
-  function renderDashboard(){
+  
+function openDashboardCompanyDetails(company){
+  if(!company)return;
+  let modal=document.getElementById("v29CompanyModal");
+  if(!modal){
+    modal=document.createElement("div");
+    modal.id="v29CompanyModal";
+    modal.className="v29-company-modal";
+    modal.innerHTML='<div class="v29-company-modal-card" role="dialog" aria-modal="true">'+
+      '<div class="v29-company-modal-head"><div><h2 id="v29CompanyTitle"></h2><div id="v29CompanySub" class="v29-company-sub"></div></div><button class="v29-company-close" id="v29CompanyClose" type="button" aria-label="Close">×</button></div>'+
+      '<div id="v29CompanyBody" class="v29-company-grid"></div>'+
+      '<div id="v29CompanyActions" class="v29-company-modal-actions"></div>'+
+    '</div>';
+    document.body.appendChild(modal);
+    document.getElementById("v29CompanyClose").addEventListener("click",function(){modal.classList.remove("open");});
+    modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.remove("open");});
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")modal.classList.remove("open");});
+  }
+  document.getElementById("v29CompanyTitle").textContent=company.name||"Company";
+  document.getElementById("v29CompanySub").textContent=(company.type||"Company")+(company.location?" • "+company.location:"");
+  const field=function(label,value,full){return '<div class="v29-company-field '+(full?'full':'')+'"><div class="lab">'+esc(label)+'</div><div class="val">'+esc(value||"—")+'</div></div>';};
+  document.getElementById("v29CompanyBody").innerHTML=
+    field("Product / Commodity",company.commodity)+
+    field("Volume",company.volume)+
+    field("Status",company.status)+
+    field("Latitude / Longitude",(company.lat??"—")+" / "+(company.lon??"—"))+
+    field("Opportunity for Stellar",company.opportunity,true)+
+    field("Latest Activity",company.activity,true)+
+    field("Next Action",company.next||"No follow-up recorded.",true);
+  document.getElementById("v29CompanyActions").innerHTML=(isAdmin&&company.id?'<button class="primary" type="button" id="v29EditCompany">✎ Edit Company</button>':"")+
+    '<button class="secondary" type="button" id="v29CloseCompany">Close</button>';
+  if(isAdmin&&company.id)document.getElementById("v29EditCompany").addEventListener("click",function(){modal.classList.remove("open");openEditCompany(company);});
+  document.getElementById("v29CloseCompany").addEventListener("click",function(){modal.classList.remove("open");});
+  modal.classList.add("open");
+}
+
+function renderDashboard(){
     if(!document.getElementById("dashboard")) return;
     installDashboard();
 
@@ -1539,7 +1592,7 @@ Ube = Purple
         const id=this.dataset.v28Company;
         const company=getCompanies().find(function(c){return String(c.id||"")===String(id);});
         if(!company) return;
-        if(typeof window.showDetail==="function") window.showDetail(company);
+        openDashboardCompanyDetails(company);
         const m=getMap();
         if(m && Number.isFinite(Number(company.lat)) && Number.isFinite(Number(company.lon))){
           m.setView([Number(company.lat),Number(company.lon)],11);
