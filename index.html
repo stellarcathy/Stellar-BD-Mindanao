@@ -651,9 +651,43 @@ document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",(
 $("addCompanyBtn").addEventListener("click",()=>{$("modal").style.display="flex"});
 $("closeModal").addEventListener("click",()=>{$("modal").style.display="none"});
 
+async function ensureFreshAdminSession(){
+  if(!isAdmin||!currentUser)return false;
+
+  // Refresh the Supabase JWT before any admin write so the database RLS
+  // policy evaluates the same authenticated user shown in the UI.
+  const {data,error}=await sb.auth.refreshSession();
+  if(error||!data?.session?.user){
+    console.error("Admin session refresh failed:",error);
+    return false;
+  }
+
+  currentUser=data.session.user;
+
+  // Re-read the database role after refresh. This keeps the UI permission
+  // check and the database RLS check aligned.
+  const {data:profile,error:profileError}=await sb.from("bd_profiles")
+    .select("id,role,full_name")
+    .eq("id",currentUser.id)
+    .maybeSingle();
+
+  if(profileError||!profile||profile.role!=="admin"){
+    console.error("Admin profile check failed:",profileError||"Admin role not found");
+    return false;
+  }
+
+  currentProfile=profile;
+  isAdmin=true;
+  return true;
+}
+
 $("saveCompany").addEventListener("click",async e=>{
   e.preventDefault();
   if(!isAdmin)return alert("Viewer accounts cannot add records.");
+
+  if(!(await ensureFreshAdminSession()))
+    return alert("Your admin session could not be verified. Please sign out and sign in again.");
+
   let payload={
     name:$("cName").value.trim(),entity_type:$("cType").value,address:$("cLocation").value.trim(),
     latitude:Number($("cLat").value),longitude:Number($("cLon").value),commodities:$("cCommodity").value.trim(),
@@ -662,11 +696,22 @@ $("saveCompany").addEventListener("click",async e=>{
   };
   if(!payload.name||!Number.isFinite(payload.latitude)||!Number.isFinite(payload.longitude))
     return alert("Please enter a company name and valid latitude/longitude.");
+
   const {data,error}=await sb.from("bd_companies").insert(payload).select().single();
-  if(error)return alert(error.message);
+
+  if(error){
+    console.error("bd_companies insert failed:",error);
+    return alert("Unable to save company: "+error.message);
+  }
+
   $("companyForm").reset();$("modal").style.display="none";
   await loadCloudData();render();
-  const x=companies.find(c=>c.id===data.id);if(x){showDetail(x);map.setView([x.lat,x.lon],11)}
+  const x=companies.find(c=>c.id===data.id);
+  if(x){
+    showDetail(x);
+    map.setView([x.lat,x.lon],11);
+  }
+  alert("Company pinned and saved permanently to Supabase.");
 });
 
 $("saveActivity").addEventListener("click",async()=>{
