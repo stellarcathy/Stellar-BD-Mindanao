@@ -432,6 +432,82 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v50-wide-map-compact-right">
+/* V50: maximize map width; keep only a slim filter/KPI rail on the right. */
+#map.view.active{
+  grid-template-columns:minmax(0,1fr) 170px!important;
+  column-gap:12px!important;
+  width:100%!important;
+}
+#map > .map-layout{
+  min-width:0!important;
+  width:100%!important;
+}
+#map > .map-layout > .panel{
+  width:100%!important;
+  min-width:0!important;
+  grid-template-columns:165px minmax(0,1fr)!important;
+}
+#map > .map-layout > .panel > .bd-map{
+  width:100%!important;
+  min-width:0!important;
+  min-height:700px!important;
+}
+#map > .toolbar,
+#map > .metrics{
+  width:170px!important;
+  max-width:170px!important;
+  justify-self:end!important;
+}
+#map > .toolbar select,
+#map > .toolbar button{
+  width:170px!important;
+  max-width:170px!important;
+}
+#map > .metrics .metric{
+  width:170px!important;
+  max-width:170px!important;
+  min-width:0!important;
+}
+@media(max-width:1050px){
+  #map.view.active{
+    grid-template-columns:minmax(0,1fr) 150px!important;
+  }
+  #map > .toolbar,
+  #map > .metrics,
+  #map > .toolbar select,
+  #map > .toolbar button,
+  #map > .metrics .metric{
+    width:150px!important;
+    max-width:150px!important;
+  }
+}
+@media(max-width:850px){
+  #map.view.active{
+    grid-template-columns:1fr!important;
+  }
+  #map > .toolbar,
+  #map > .metrics{
+    width:100%!important;
+    max-width:none!important;
+    justify-self:stretch!important;
+  }
+  #map > .toolbar select,
+  #map > .toolbar button,
+  #map > .metrics .metric{
+    width:100%!important;
+    max-width:none!important;
+  }
+  #map > .map-layout > .panel{
+    grid-template-columns:1fr!important;
+  }
+  #map > .map-layout > .panel > .bd-map{
+    min-height:500px!important;
+  }
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
