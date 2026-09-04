@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V40 - Full-width map with click-for-company modal"><style id="v40-map-company-modal-css">
+<meta name="app-version" content="V41 - Fixed crop icon company popup"><style id="v40-map-company-modal-css">
 #map .map-layout{grid-template-columns:1fr!important;display:grid}
 #map .map-layout>.detail{display:none!important}
 #map .map-layout>.panel{min-width:0}
@@ -439,8 +439,12 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function filtered(){let q=$("search").value.toLowerCase(),s=$("statusFilter").value,t=$("typeFilter").value;return companies.filter(x=>(!q||(x.name+" "+x.location+" "+x.commodity).toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(t==="all"||x.type.includes(t)))}
 async function showDetail(x){
   if(!x)return;
-  const adminButtons=isAdmin&&x.id?'<div class="actions"><button class="primary" id="editCompanyBtn">✎ Edit Company</button></div>':'';
-  $("detail").innerHTML='<h2>'+esc(x.name)+'</h2><div class="type">'+esc(x.type)+' • '+esc(x.location)+'</div>'+
+
+  const adminButtons=isAdmin&&x.id
+    ?'<div class="actions"><button class="primary" id="editCompanyBtn">✎ Edit Company</button></div>'
+    :'';
+
+  const detailHtml='<h2>'+esc(x.name)+'</h2><div class="type">'+esc(x.type)+' • '+esc(x.location)+'</div>'+
     '<div class="drow"><div class="lab">Commodity / Service</div><div class="val">'+esc(x.commodity)+'</div></div>'+
     '<div class="drow"><div class="lab">Volume</div><div class="val">'+esc(x.volume)+'</div></div>'+
     '<div class="drow"><div class="lab">Status</div><div class="val"><span class="pill">'+esc(x.status)+'</span></div></div>'+
@@ -448,20 +452,33 @@ async function showDetail(x){
     '<div class="drow"><div class="lab">Latest Activity</div><div class="val">'+esc(x.activity)+'</div></div>'+
     '<div class="drow"><div class="lab">Next Action</div><div class="val">'+esc(x.next||"No follow-up recorded.")+'</div></div>'+
     '<div id="statusHistoryBox" class="bd-history"><div class="lab">Status History</div><div class="val" style="color:var(--muted)">Loading…</div></div>'+adminButtons;
-  if(isAdmin&&x.id){
-    $("editCompanyBtn").addEventListener("click",()=>openEditCompany(x));
-  }
-  await loadStatusHistory(x.id);
-}
-  // V40: Mindanao Map uses the same detail content in a centered modal.
-  const mapRoot=$("map"), modal=$("mapCompanyModal"), modalContent=$("mapCompanyModalContent");
-  if(mapRoot && mapRoot.classList.contains("active") && modal && modalContent){
-    modalContent.innerHTML=$("detail").innerHTML;
+
+  // The old side panel was intentionally removed in V40, so never require #detail.
+  const mapRoot=$("map");
+  const modal=$("mapCompanyModal");
+  const modalContent=$("mapCompanyModalContent");
+  const isMapActive=!!(mapRoot&&mapRoot.classList.contains("active"));
+
+  if(isMapActive && modal && modalContent){
+    modalContent.innerHTML=detailHtml;
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden","false");
     document.body.style.overflow="hidden";
-    const close=$("mapCompanyModalClose"); if(close) close.focus();
+
+    const editBtn=$("editCompanyBtn");
+    if(editBtn&&isAdmin&&x.id) editBtn.addEventListener("click",()=>openEditCompany(x));
+  }else{
+    // Preserve the original dashboard/detail behavior if showDetail is called elsewhere.
+    const detail=$("detail");
+    if(detail){
+      detail.innerHTML=detailHtml;
+      const editBtn=$("editCompanyBtn");
+      if(editBtn&&isAdmin&&x.id) editBtn.addEventListener("click",()=>openEditCompany(x));
+    }
   }
+
+  await loadStatusHistory(x.id);
+}
 
 function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{let m=L.marker([x.lat,x.lon],{icon:icon(x.status)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
 function render(){let a=filtered();$("mAll").textContent=a.length;$("mLead").textContent=a.filter(x=>x.status==="New Lead").length;$("mActive").textContent=a.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("mClosed").textContent=a.filter(x=>x.status==="Closed Deal").length;$("sideLeads").textContent=companies.filter(x=>x.status==="New Lead").length;$("sideActive").textContent=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("sideClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;$("sideTotal").textContent=companies.length;$("dAct").textContent=activities.length;$("dComp").textContent=companies.length;$("dLead").textContent=companies.filter(x=>x.status==="New Lead").length;$("dClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;
