@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V33 | Crop Supply Map</title>
+<title>Stellar Seeds — Business Development Management System V34 | Crop Supply Map</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -93,7 +93,7 @@ body:not(.ready)>.app{display:none!important}
 .bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 </style>
-<meta name="app-version" content="V33 - Crop Supply Map rendering fix"></head>
+<meta name="app-version" content="V34 - Crop Supply Map expanded crops"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -1973,7 +1973,11 @@ function renderDashboard(){
     pineapple:{name:"Pineapple",emoji:"🍍",color:"#d97706"},
     pepper:{name:"Black Pepper",emoji:"🫐",color:"#222222"},
     rice:{name:"Rice",emoji:"🌾",color:"#c49a2e"},
-    sugarcane:{name:"Sugarcane",emoji:"🎋",color:"#2f8f46"}
+    sugarcane:{name:"Sugarcane",emoji:"🎋",color:"#2f8f46"},
+    potato:{name:"Potato",emoji:"🥔",color:"#a16207"},
+    greenpeas:{name:"Green Peas",emoji:"🫛",color:"#16a34a"},
+    carrots:{name:"Carrots",emoji:"🥕",color:"#ea580c"},
+    bellpepper:{name:"Bell Pepper",emoji:"🫑",color:"#dc2626"}
   };
 
   const STRONGEST=[
@@ -1987,20 +1991,24 @@ function renderDashboard(){
     ["pineapple", "Bukidnon, Davao del Norte, South Cotabato"],
     ["pepper", "Davao del Sur, South Cotabato"],
     ["rice", "Sultan Kudarat, Cotabato, South Cotabato"],
-    ["sugarcane", "Sultan Kudarat, Cotabato"]
+    ["sugarcane", "Sultan Kudarat, Cotabato"],
+    ["potato",["Bukidnon","Davao del Norte","South Cotabato"]],
+    ["greenpeas",["Bukidnon","Davao del Norte","South Cotabato"]],
+    ["carrots",["Bukidnon","Davao del Sur","South Cotabato"]],
+    ["bellpepper",["Davao del Sur","Bukidnon","South Cotabato"]]
   ];
 
   const ZONES=[
-    {name:"South Cotabato",pos:[6.215,125.04],crops:["corn","coffee","cacao","cassava","pineapple"],distance:10},
-    {name:"Sultan Kudarat",pos:[6.506,124.419],crops:["corn","cassava","rice","sugarcane"],distance:86},
+    {name:"South Cotabato",pos:[6.215,125.04],crops:["corn","coffee","cacao","cassava","pineapple","carrots","bellpepper"],distance:10},
+    {name:"Sultan Kudarat",pos:[6.506,124.419],crops:["corn","cassava","rice","sugarcane","potato","greenpeas"],distance:86},
     {name:"Cotabato Province",pos:[7.204,124.231],crops:["corn","cacao","pineapple","cassava","rice"],distance:151},
     {name:"Davao del Sur",pos:[6.70,125.30],crops:["coffee","cacao","pepper"],distance:63},
-    {name:"Davao del Norte",pos:[7.56,125.65],crops:["corn","pineapple","banana","ube"],distance:166},
-    {name:"Bukidnon",pos:[8.15,125.12],crops:["corn","coffee","cacao","pineapple","ube"],distance:221},
-    {name:"Agusan del Norte",pos:[9.00,125.50],crops:["cassava","coconut"],distance:318},
-    {name:"Zamboanga del Norte",pos:[8.00,122.90],crops:["corn","cassava","coconut"],distance:318},
-    {name:"Misamis Occidental",pos:[8.35,123.75],crops:["corn","cassava","banana"],distance:286},
-    {name:"Sarangani",pos:[5.85,125.28],crops:["coffee","coconut","pineapple","banana"],distance:39}
+    {name:"Davao del Norte",pos:[7.56,125.65],crops:["corn","pineapple","banana","ube","potato","carrots","greenpeas"],distance:166},
+    {name:"Bukidnon",pos:[8.15,125.12],crops:["corn","coffee","cacao","pineapple","ube","potato","greenpeas","carrots"],distance:221},
+    {name:"Agusan del Norte",pos:[9.00,125.50],crops:["cassava","coconut","greenpeas"],distance:318},
+    {name:"Zamboanga del Norte",pos:[8.00,122.90],crops:["corn","cassava","coconut","potato","carrots"],distance:318},
+    {name:"Misamis Occidental",pos:[8.35,123.75],crops:["corn","cassava","banana","potato","greenpeas","bellpepper"],distance:286},
+    {name:"Sarangani",pos:[5.85,125.28],crops:["coffee","coconut","pineapple","banana","bellpepper","carrots"],distance:39}
   ];
 
   const RINGS=[
