@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V42 - Mindanao Map first, controls below"><style id="v40-map-company-modal-css">
+<meta name="app-version" content="V42 - Mindanao Map first, Crop Supply Map visibility fixed"><style id="v40-map-company-modal-css">
 #map .map-layout{grid-template-columns:1fr!important;display:grid}
 #map .map-layout>.detail{display:none!important}
 #map .map-layout>.panel{min-width:0}
@@ -113,16 +113,13 @@ body:not(.ready)>.app{display:none!important}
 .map-company-dialog .val{font-size:13px;line-height:1.45;margin-top:3px}
 .map-company-dialog .pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}
 .map-company-dialog .actions{margin-top:14px}
-</style>
-<style id="v42-map-first-controls-below">
-/* V42 — Mindanao Map only:
-   1) Map
-   2) Search / filters
-   3) KPI cards
-   Existing functionality and element IDs are preserved. */
-#map{
+</style><style id="v42-map-first-layout">
+#map.view.active{
   display:flex!important;
   flex-direction:column!important;
+}
+#map.view:not(.active){
+  display:none!important;
 }
 #map > .map-layout{
   order:1!important;
@@ -144,14 +141,10 @@ body:not(.ready)>.app{display:none!important}
   min-height:560px;
 }
 @media(max-width:900px){
-  #map > .map-layout .bd-map{
-    min-height:480px;
-  }
+  #map > .map-layout .bd-map{min-height:480px;}
 }
 @media(max-width:650px){
-  #map > .map-layout .bd-map{
-    min-height:400px;
-  }
+  #map > .map-layout .bd-map{min-height:400px;}
 }
 </style>
 
