@@ -211,6 +211,29 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v44-one-column-controls">
+/* V44: stack the Mindanao Map controls and KPI cards in one column */
+#map > .toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:10px!important;
+}
+#map > .toolbar > *{
+  width:100%!important;
+  min-width:0!important;
+}
+#map > .metrics{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+#map > .metrics .metric{
+  width:100%!important;
+  min-width:0!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
