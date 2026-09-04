@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V34 | Crop Supply Map</title>
+<title>Stellar Seeds — Business Development Management System V35 | Crop Icons on Company Map</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -406,7 +406,22 @@ let activities=[
 let map,markers=[]; const mindanaoBounds=L.latLngBounds([[5.05,121.75],[10.15,126.85]]);
 const $=id=>document.getElementById(id);
 function color(s){if(s==="New Lead"||s==="Prospect")return "#f59e0b";if(["Active Discussion","Under Evaluation","Initial Inquiry"].includes(s))return "#eab308";if(s==="Trial Completed")return "#3b82f6";return "#0b9b52"}
-function icon(s){return L.divIcon({className:"",html:'<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color(s)+';border:3px solid white;box-shadow:0 2px 5px #777"><span style="display:block;width:6px;height:6px;background:white;border-radius:50%;margin:5px auto"></span></div>',iconSize:[22,22],iconAnchor:[11,21]})}
+function cropIcon(keys){
+  const valid=[...(keys||[])].filter(k=>PRODUCTS[k]);
+  const shown=valid.length?valid:[""];
+  const items=shown.map(function(k){
+    const p=PRODUCTS[k];
+    return p
+      ? '<span title="'+esc(p.name)+'" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid '+p.color+';box-shadow:0 2px 6px rgba(0,0,0,.22);font-size:23px;line-height:1">'+p.icon+'</span>'
+      : '<span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #9aa9a2;box-shadow:0 2px 6px rgba(0,0,0,.18);font-size:17px">📍</span>';
+  }).join("");
+  return L.divIcon({
+    className:"bd-crop-marker",
+    html:'<div style="display:flex;align-items:center;justify-content:center;gap:3px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))">'+items+'</div>',
+    iconSize:[Math.max(38,valid.length*37),40],
+    iconAnchor:[Math.max(19,valid.length*18.5),20]
+  });
+}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function filtered(){let q=$("search").value.toLowerCase(),s=$("statusFilter").value,t=$("typeFilter").value;return companies.filter(x=>(!q||(x.name+" "+x.location+" "+x.commodity).toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(t==="all"||x.type.includes(t)))}
 async function showDetail(x){
@@ -425,7 +440,7 @@ async function showDetail(x){
   }
   await loadStatusHistory(x.id);
 }
-function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{let m=L.marker([x.lat,x.lon],{icon:icon(x.status)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
+function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{const keys=productKeys(x);let m=L.marker([x.lat,x.lon],{icon:cropIcon(keys)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
 function render(){let a=filtered();$("mAll").textContent=a.length;$("mLead").textContent=a.filter(x=>x.status==="New Lead").length;$("mActive").textContent=a.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("mClosed").textContent=a.filter(x=>x.status==="Closed Deal").length;$("sideLeads").textContent=companies.filter(x=>x.status==="New Lead").length;$("sideActive").textContent=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("sideClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;$("sideTotal").textContent=companies.length;$("dAct").textContent=activities.length;$("dComp").textContent=companies.length;$("dLead").textContent=companies.filter(x=>x.status==="New Lead").length;$("dClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;
 $("pipelineBody").innerHTML=companies.map(x=>'<tr><td><b>'+x.name+'</b><br><span style="color:#6b7d74">'+x.location+'</span></td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.opportunity+'</td><td><span class="pill">'+x.status+'</span></td><td>'+x.next+'</td></tr>').join("");
 $("companyCards").innerHTML=companies.map(x=>'<div class="opcard" data-company-id="'+x.id+'" style="cursor:pointer"><h3>'+esc(x.name)+'</h3><p>'+esc(x.type)+'</p><p>'+esc(x.location)+'</p><p><b>'+esc(x.commodity)+'</b> • '+esc(x.volume)+'</p><span class="pill">'+esc(x.status)+'</span></div>').join("");
@@ -1402,7 +1417,11 @@ Ube = Purple
     coffee:{name:"Coffee",color:"#111111",icon:"☕"},
     cacao:{name:"Cacao",color:"#7a4b2a",icon:"🍫"},
     pepper:{name:"Pepper",color:"#f28c18",icon:"🌶️"},
-    ube:{name:"Ube",color:"#7a3db8",icon:"🍠"}
+    ube:{name:"Ube",color:"#7a3db8",icon:"🍠"},
+    potato:{name:"Potato",color:"#a16207",icon:"🥔"},
+    greenpeas:{name:"Green Peas",color:"#16a34a",icon:"🫛"},
+    carrots:{name:"Carrots",color:"#ea580c",icon:"🥕"},
+    bellpepper:{name:"Bell Pepper",color:"#dc2626",icon:"🫑"}
   };
 
   let selectedProduct="all";
@@ -1463,6 +1482,10 @@ Ube = Purple
     if(/\bcacao\b|\bcocoa\b/.test(raw)) keys.push("cacao");
     if(/\bpepper\b/.test(raw)) keys.push("pepper");
     if(/\bube\b/.test(raw)) keys.push("ube");
+    if(/\bpotato\b/.test(raw)) keys.push("potato");
+    if(/\bgreen\s*peas?\b/.test(raw)) keys.push("greenpeas");
+    if(/\bcarrots?\b/.test(raw)) keys.push("carrots");
+    if(/\bbell\s*pepper\b/.test(raw)) keys.push("bellpepper");
     return [...new Set(keys)];
   }
 
@@ -1681,7 +1704,7 @@ function renderDashboard(){
       '<option value="cacao">Cacao</option>'+ 
       '<option value="pepper">Pepper</option>'+ 
       '<option value="ube">Ube</option>'+ 
-      '</select><span class="v28-map-note">Pin color = product • multi-product = multi-color</span>';
+      '</select><span class="v28-map-note">Map icon = crop • multi-crop = multiple crop icons</span>';
 
     const title=panel.querySelector(".panel-title");
     if(title) title.insertAdjacentElement("afterend",box); else panel.prepend(box);
