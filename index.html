@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V35 | Crop Icons on Company Map</title>
+<title>Stellar Seeds — Business Development Management System V34 | Crop Supply Map</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -93,7 +93,7 @@ body:not(.ready)>.app{display:none!important}
 .bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 </style>
-<meta name="app-version" content="V34 - Crop Supply Map expanded crops"></head>
+<meta name="app-version" content="V36 - Viewer data loading + crop icons"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -406,22 +406,7 @@ let activities=[
 let map,markers=[]; const mindanaoBounds=L.latLngBounds([[5.05,121.75],[10.15,126.85]]);
 const $=id=>document.getElementById(id);
 function color(s){if(s==="New Lead"||s==="Prospect")return "#f59e0b";if(["Active Discussion","Under Evaluation","Initial Inquiry"].includes(s))return "#eab308";if(s==="Trial Completed")return "#3b82f6";return "#0b9b52"}
-function cropIcon(keys){
-  const valid=[...(keys||[])].filter(k=>PRODUCTS[k]);
-  const shown=valid.length?valid:[""];
-  const items=shown.map(function(k){
-    const p=PRODUCTS[k];
-    return p
-      ? '<span title="'+esc(p.name)+'" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid '+p.color+';box-shadow:0 2px 6px rgba(0,0,0,.22);font-size:23px;line-height:1">'+p.icon+'</span>'
-      : '<span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #9aa9a2;box-shadow:0 2px 6px rgba(0,0,0,.18);font-size:17px">📍</span>';
-  }).join("");
-  return L.divIcon({
-    className:"bd-crop-marker",
-    html:'<div style="display:flex;align-items:center;justify-content:center;gap:3px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))">'+items+'</div>',
-    iconSize:[Math.max(38,valid.length*37),40],
-    iconAnchor:[Math.max(19,valid.length*18.5),20]
-  });
-}
+function icon(s){return L.divIcon({className:"",html:'<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color(s)+';border:3px solid white;box-shadow:0 2px 5px #777"><span style="display:block;width:6px;height:6px;background:white;border-radius:50%;margin:5px auto"></span></div>',iconSize:[22,22],iconAnchor:[11,21]})}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function filtered(){let q=$("search").value.toLowerCase(),s=$("statusFilter").value,t=$("typeFilter").value;return companies.filter(x=>(!q||(x.name+" "+x.location+" "+x.commodity).toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(t==="all"||x.type.includes(t)))}
 async function showDetail(x){
@@ -440,7 +425,7 @@ async function showDetail(x){
   }
   await loadStatusHistory(x.id);
 }
-function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{const keys=productKeys(x);let m=L.marker([x.lat,x.lon],{icon:cropIcon(keys)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
+function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{let m=L.marker([x.lat,x.lon],{icon:icon(x.status)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
 function render(){let a=filtered();$("mAll").textContent=a.length;$("mLead").textContent=a.filter(x=>x.status==="New Lead").length;$("mActive").textContent=a.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("mClosed").textContent=a.filter(x=>x.status==="Closed Deal").length;$("sideLeads").textContent=companies.filter(x=>x.status==="New Lead").length;$("sideActive").textContent=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("sideClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;$("sideTotal").textContent=companies.length;$("dAct").textContent=activities.length;$("dComp").textContent=companies.length;$("dLead").textContent=companies.filter(x=>x.status==="New Lead").length;$("dClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;
 $("pipelineBody").innerHTML=companies.map(x=>'<tr><td><b>'+x.name+'</b><br><span style="color:#6b7d74">'+x.location+'</span></td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.opportunity+'</td><td><span class="pill">'+x.status+'</span></td><td>'+x.next+'</td></tr>').join("");
 $("companyCards").innerHTML=companies.map(x=>'<div class="opcard" data-company-id="'+x.id+'" style="cursor:pointer"><h3>'+esc(x.name)+'</h3><p>'+esc(x.type)+'</p><p>'+esc(x.location)+'</p><p><b>'+esc(x.commodity)+'</b> • '+esc(x.volume)+'</p><span class="pill">'+esc(x.status)+'</span></div>').join("");
@@ -604,49 +589,79 @@ async function ensureProfile(){
   return profile;
 }
 async function loadCloudData(){
-  const [c,a,f,r]=await Promise.all([
-    sb.from("bd_companies").select("*").order("created_at",{ascending:true}),
-    sb.from("bd_activities").select("*").order("activity_date",{ascending:false}),
-    sb.from("bd_followups").select("*").order("followup_date",{ascending:true}),
-    sb.from("bd_weekly_reports").select("*").order("report_number",{ascending:true})
-  ]);
-  if(c.error) throw c.error;if(a.error) throw a.error;
-  if(f.error) throw f.error;if(r.error) throw r.error;
+  if(!currentUser) return;
 
-  const followups=f.data||[];
+  let session=(await sb.auth.getSession())?.data?.session||null;
+  if(!session || session.user?.id!==currentUser.id){
+    const refreshed=await sb.auth.refreshSession();
+    if(refreshed.error) throw refreshed.error;
+    session=refreshed.data?.session||null;
+  }
+  if(!session) throw new Error("Your Supabase session is not ready. Please sign in again.");
+  currentUser=session.user;
+
+  async function readWithRetry(table,select,orderColumn,attempts=3){
+    let lastError=null;
+    for(let attempt=1;attempt<=attempts;attempt++){
+      const result=await sb.from(table).select(select).order(orderColumn,{ascending:true});
+      if(!result.error) return result.data||[];
+      lastError=result.error;
+      if(attempt<attempts) await new Promise(r=>setTimeout(r,400*attempt));
+    }
+    throw lastError;
+  }
+
+  // Companies are the critical dataset for the map. Load it independently so
+  // an optional dataset cannot make the Viewer map appear empty.
+  const companyRows=await readWithRetry("bd_companies","*","created_at");
+
+  let activityRows=[],followupRows=[],reportRows=[];
+  try{activityRows=await readWithRetry("bd_activities","*","activity_date");}
+  catch(e){console.warn("V36 activities read skipped:",e);}
+  try{followupRows=await readWithRetry("bd_followups","*","followup_date");}
+  catch(e){console.warn("V36 followups read skipped:",e);}
+  try{reportRows=await readWithRetry("bd_weekly_reports","*","report_number");}
+  catch(e){console.warn("V36 reports read skipped:",e);}
+
   const byCompany={};
-  followups.forEach(row=>{
+  (followupRows||[]).forEach(row=>{
     if(!row.company_id)return;
     if(!byCompany[row.company_id])byCompany[row.company_id]=[];
     byCompany[row.company_id].push(row);
   });
 
-  companies=(c.data||[]).map(x=>{
+  companies=(companyRows||[]).map(x=>{
     const fu=(byCompany[x.id]||[]).filter(y=>y.status!=="Completed").sort((p,q)=>{
-      const pd=p.followup_date||"9999-12-31", qd=q.followup_date||"9999-12-31";
+      const pd=p.followup_date||"9999-12-31",qd=q.followup_date||"9999-12-31";
       return pd.localeCompare(qd);
-    })[0] || (byCompany[x.id]||[]).slice(-1)[0];
+    })[0]||(byCompany[x.id]||[]).slice(-1)[0];
+
     return {
       id:x.id,name:x.name,type:x.entity_type,
       location:[x.city,x.province].filter(Boolean).join(", ")||x.address||"Location to confirm",
       lat:x.latitude,lon:x.longitude,commodity:x.commodities||"—",volume:x.potential_volume||"TBD",
       status:x.status||"Prospect",opportunity:x.notes||"Opportunity under evaluation.",
-      next:fu?.action_required||"Follow up",
-      activity:"Cloud record"
+      next:fu?.action_required||"Follow up",activity:"Cloud record"
     };
   });
 
   const companyNames=Object.fromEntries(companies.map(x=>[x.id,x.name]));
-  activities=(a.data||[]).map(x=>({
+  activities=(activityRows||[]).map(x=>({
     id:x.id,date:x.activity_date,org:companyNames[x.company_id]||x.company_id||"Unlinked",
     company_id:x.company_id||null,type:x.activity_type||"Activity",
     result:x.result||x.findings||x.discussion||"",status:"Recorded",next:x.next_action||"Follow up"
   }));
-  window.cloudReports=r.data||[];
-  window.cloudFollowups=followups;
-  if(!companies.length) companies=[];
-  if(!activities.length) activities=[];
+
+  window.cloudReports=reportRows||[];
+  window.cloudFollowups=followupRows||[];
+
+  console.info("V36 cloud data loaded:",{
+    user:currentUser.email,role:currentProfile?.role,
+    companies:companies.length,activities:activities.length,
+    followups:window.cloudFollowups.length,reports:window.cloudReports.length
+  });
 }
+
 function setAdminUI(){
   document.body.classList.toggle("admin-mode",isAdmin);
   document.body.classList.toggle("viewer-mode",!isAdmin);
@@ -1514,17 +1529,20 @@ Ube = Purple
   }
 
   function pinIcon(keys){
-    const colors=(keys||[]).map(function(k){return PRODUCTS[k]&&PRODUCTS[k].color;}).filter(Boolean);
-    const background=colors.length===1?colors[0]:
-      colors.length>1?"conic-gradient("+colors.map(function(c,i){
-        return c+" "+(i*100/colors.length)+"% "+((i+1)*100/colors.length)+"%";
-      }).join(",")+")":"#9aa9a2";
+    const valid=[...(keys||[])].filter(function(k){return PRODUCTS[k];});
+    const items=(valid.length?valid:["__none__"]).map(function(k){
+      const p=PRODUCTS[k];
+      if(!p){
+        return '<span title="Crop not specified" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid #9aa9a2;box-shadow:0 2px 6px rgba(0,0,0,.18);font-size:17px">📍</span>';
+      }
+      return '<span title="'+esc(p.name)+'" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid '+p.color+';box-shadow:0 2px 6px rgba(0,0,0,.22);font-size:23px;line-height:1">'+p.icon+'</span>';
+    }).join("");
 
     return L.divIcon({
-      className:"",
-      html:'<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+background+';border:3px solid #fff;box-shadow:0 2px 5px #777"><span style="display:block;width:6px;height:6px;background:#fff;border-radius:50%;margin:5px auto"></span></div>',
-      iconSize:[22,22],
-      iconAnchor:[11,21]
+      className:"bd-crop-marker",
+      html:'<div style="display:flex;align-items:center;justify-content:center;gap:3px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))">'+items+'</div>',
+      iconSize:[Math.max(38,valid.length*37),40],
+      iconAnchor:[Math.max(19,valid.length*18.5),20]
     });
   }
 
@@ -2269,5 +2287,26 @@ function renderDashboard(){
 })();
 </script>
 
+
+<script id="v36-viewer-recovery">
+(function(){
+  "use strict";
+  let attempts=0;
+  async function recover(){
+    if(typeof isAdmin!=="boolean"||isAdmin||!currentUser)return;
+    if(typeof companies!=="undefined"&&companies.length>0)return;
+    if(attempts>=5)return;
+    attempts++;
+    try{
+      await loadCloudData();
+      render();
+      if(map){refreshMap();map.invalidateSize(true);}
+      console.info("V36 Viewer recovery attempt",attempts,"companies:",companies.length);
+    }catch(e){console.warn("V36 Viewer recovery failed:",e);}
+    if(typeof companies==="undefined"||!companies.length)setTimeout(recover,1000);
+  }
+  setTimeout(recover,1000);
+})();
+</script>
 </body>
 </html>
