@@ -616,6 +616,23 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v54-all-products-text-only">
+/* V54: All Products is text-only; individual products keep their crop icons. */
+#map > .map-layout > .panel > .v53-product-picker .v53-all-products{
+  justify-content:center!important;
+  text-align:center!important;
+  min-height:54px!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-all-products .v53-product-icons{
+  display:none!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-all-products .v53-product-card-name{
+  font-size:18px!important;
+  font-weight:700!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
