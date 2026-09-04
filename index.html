@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stellar Seeds — Business Development Management System V32 | Crop Supply Map</title>
+<title>Stellar Seeds — Business Development Management System V33 | Crop Supply Map</title>
 <link rel="preconnect" href="https://unpkg.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -93,7 +93,7 @@ body:not(.ready)>.app{display:none!important}
 .bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 </style>
-<meta name="app-version" content="V32 - Crop Supply Map active verification build"></head>
+<meta name="app-version" content="V33 - Crop Supply Map rendering fix"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -1942,6 +1942,16 @@ function renderDashboard(){
 @media(max-width:1100px){.csm-layout{grid-template-columns:1fr}.csm-side{grid-template-columns:1fr 1fr}.csm-map-wrap{height:650px}}
 @media(max-width:750px){.csm-header{align-items:flex-start;flex-direction:column}.csm-side{grid-template-columns:1fr}.csm-map-wrap{height:570px}.csm-legend{width:165px}.csm-distance{width:205px}.csm-crop-buttons{grid-template-columns:repeat(6,1fr)}}
 @media(max-width:600px){.csm-map-wrap{height:520px}.csm-legend{left:6px;top:6px;width:145px;padding:8px}.csm-distance{left:6px;bottom:38px;width:190px;padding:8px}.csm-scale{right:6px;bottom:6px;font-size:8px;max-width:180px}.csm-zone-label{min-width:85px;padding:4px;font-size:8px}.csm-zone-crops{font-size:12px}.csm-header h1{font-size:21px}}
+
+/* V33 map rendering reliability */
+.csm-map.leaflet-container{width:100%!important;height:100%!important;min-height:520px;background:#dceff4;overflow:hidden}
+.csm-map .leaflet-map-pane{z-index:100}
+.csm-map .leaflet-tile-pane{z-index:200}
+.csm-map .leaflet-overlay-pane{z-index:400}
+.csm-map .leaflet-marker-pane{z-index:600}
+.csm-map .leaflet-tooltip-pane{z-index:650}
+.csm-map .leaflet-popup-pane{z-index:700}
+.csm-map .leaflet-control-container{z-index:800}
 </style>
 
 <script id="csm-v31-js">
@@ -2067,62 +2077,115 @@ function renderDashboard(){
   }
 
   function addMap(){
-    if(map||typeof L==="undefined")return;
+    if(typeof L==="undefined") return false;
+
     const node=el("cropSupplyMapCanvas");
-    if(!node)return;
+    if(!node) return false;
 
-    map=L.map(node,{center:CENTER,zoom:7,minZoom:5,maxZoom:10,zoomControl:true,worldCopyJump:false});
+    // If Leaflet was initialized while the view was still being laid out,
+    // rebuild it once with the final dimensions.
+    if(map){
+      setTimeout(()=>map && map.invalidateSize(true),50);
+      setTimeout(()=>map && map.invalidateSize(true),500);
+      return true;
+    }
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      maxZoom:19,
-      noWrap:true,
-      attribution:"© OpenStreetMap contributors"
-    }).addTo(map);
+    try{
+      map=L.map(node,{
+        center:CENTER,
+        zoom:7,
+        minZoom:5,
+        maxZoom:10,
+        zoomControl:true,
+        worldCopyJump:false,
+        preferCanvas:false
+      });
 
-    RINGS.forEach((ring,i)=>{
-      L.circle(CENTER,{
-        radius:ring.m,
-        color:ring.color,
-        weight:1.5,
-        dashArray:"7 6",
-        fillColor:ring.fill,
-        fillOpacity:i===3?0.025:0.012,
-        interactive:false
+      const tiles=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+        maxZoom:19,
+        noWrap:true,
+        updateWhenZooming:true,
+        updateWhenIdle:true,
+        keepBuffer:3,
+        attribution:"© OpenStreetMap contributors"
+      });
+
+      tiles.on("tileerror",function(e){
+        console.warn("Crop Supply Map tile failed to load:",e);
+      });
+      tiles.addTo(map);
+
+      RINGS.forEach((ring,i)=>{
+        L.circle(CENTER,{
+          radius:ring.m,
+          color:ring.color,
+          weight:2,
+          dashArray:"8 7",
+          fillColor:ring.fill,
+          fillOpacity:i===3?0.025:0.012,
+          interactive:false
+        }).addTo(map);
+      });
+
+      const stellarIcon=L.divIcon({
+        className:"",
+        html:'<div class="csm-stellar-icon"><span>✦</span></div>',
+        iconSize:[36,36],
+        iconAnchor:[18,35]
+      });
+
+      const stellar=L.marker(CENTER,{
+        icon:stellarIcon,
+        zIndexOffset:10000,
+        title:"Stellar Seeds Corp"
       }).addTo(map);
-    });
 
-    // Stellar Seeds reference pin.
-    const stellarIcon=L.divIcon({
-      className:"",
-      html:'<div class="csm-stellar-icon"><span>✦</span></div>',
-      iconSize:[36,36],
-      iconAnchor:[18,35]
-    });
-    const stellar=L.marker(CENTER,{icon:stellarIcon,zIndexOffset:10000,title:"Stellar Seeds Corp"}).addTo(map);
-    stellar.bindTooltip('<span class="csm-stellar-label">STELLAR SEEDS CORP.</span>',{
-      direction:"bottom",permanent:true,offset:[0,7],opacity:1
-    });
-
-    ZONES.forEach(zone=>{
-      const marker=L.marker(zone.pos,{icon:zoneIcon(zone),zIndexOffset:200}).addTo(map);
-      marker.bindPopup(
-        '<div style="min-width:180px"><b>'+escapeHtml(zone.name)+'</b>'+
-        '<div style="margin-top:5px;font-size:12px"><b>Approx. distance:</b> '+zone.distance+' km</div>'+
-        '<div style="margin-top:5px;font-size:12px"><b>Key crops:</b> '+zone.crops.map(k=>CROPS[k].emoji+" "+CROPS[k].name).join(", ")+'</div></div>'
+      stellar.bindTooltip(
+        '<span class="csm-stellar-label">STELLAR SEEDS CORP.</span>',
+        {direction:"bottom",permanent:true,offset:[0,7],opacity:1}
       );
-      zoneMarkers.push({zone,marker});
-    });
 
-    const bounds=L.latLngBounds([CENTER]);
-    // Fit the map to the outer 400 km ring while keeping useful detail.
-    const edge=L.latLng(CENTER[0]+(400/111.2),CENTER[1]);
-    bounds.extend(edge); bounds.extend(L.latLng(CENTER[0]-(400/111.2),CENTER[1]));
-    bounds.extend(L.latLng(CENTER[0],CENTER[1]+(400/(111.2*Math.cos(CENTER[0]*Math.PI/180)))));
-    bounds.extend(L.latLng(CENTER[0],CENTER[1]-(400/(111.2*Math.cos(CENTER[0]*Math.PI/180)))));
-    map.fitBounds(bounds,{padding:[15,15]});
-    requestAnimationFrame(()=>map.invalidateSize(true));
-    setTimeout(()=>map.invalidateSize(true),250);
-    setHighlight("all");
+      ZONES.forEach(zone=>{
+        const marker=L.marker(zone.pos,{
+          icon:zoneIcon(zone),
+          zIndexOffset:200
+        }).addTo(map);
+
+        marker.bindPopup(
+          '<div style="min-width:180px"><b>'+escapeHtml(zone.name)+'</b>'+
+          '<div style="margin-top:5px;font-size:12px"><b>Approx. distance:</b> '+zone.distance+' km</div>'+
+          '<div style="margin-top:5px;font-size:12px"><b>Key crops:</b> '+
+          zone.crops.map(k=>CROPS[k].emoji+" "+CROPS[k].name).join(", ")+
+          '</div></div>'
+        );
+
+        zoneMarkers.push({zone,marker});
+      });
+
+      // Show the full 400 km sourcing radius.
+      const dLat=400/111.2;
+      const dLng=400/(111.2*Math.cos(CENTER[0]*Math.PI/180));
+      const bounds=L.latLngBounds(
+        [CENTER[0]-dLat,CENTER[1]-dLng],
+        [CENTER[0]+dLat,CENTER[1]+dLng]
+      );
+      map.fitBounds(bounds,{padding:[18,18]});
+
+      // Critical for maps initialized in a tab/section.
+      map.whenReady(()=>{
+        requestAnimationFrame(()=>map.invalidateSize(true));
+        setTimeout(()=>map.invalidateSize(true),150);
+        setTimeout(()=>map.invalidateSize(true),600);
+        setTimeout(()=>map.invalidateSize(true),1500);
+      });
+
+      setHighlight("all");
+      return true;
+    }catch(err){
+      console.error("Crop Supply Map initialization failed:",err);
+      map=null;
+      return false;
+    }
   }
 
   function activateTab(){
@@ -2159,6 +2222,19 @@ function renderDashboard(){
   // Re-wire after the base app initializes or redraws navigation.
   setTimeout(wireNav,300);
   setTimeout(wireNav,1200);
+  window.addEventListener("load",()=>{
+    setTimeout(()=>{
+      if(el("cropSupplyMap")?.classList.contains("active")){
+        addMap();
+        if(map) map.invalidateSize(true);
+      }
+    },300);
+    setTimeout(()=>{
+      if(el("cropSupplyMap")?.classList.contains("active") && map){
+        map.invalidateSize(true);
+      }
+    },1200);
+  });
 })();
 </script>
 
