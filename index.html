@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V37 - Crop icon legend"></head>
+<meta name="app-version" content="V38 - Complete crop product selector"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -1719,13 +1719,9 @@ function renderDashboard(){
     box.id="v28MapProductFilter";
     box.className="v28-map-filter";
     box.innerHTML='<label>Product:</label><select id="v28MapProductSelect">'+
-      '<option value="all">All Products</option>'+ 
-      '<option value="corn">Commercial Corn</option>'+ 
-      '<option value="coffee">Coffee</option>'+ 
-      '<option value="cacao">Cacao</option>'+ 
-      '<option value="pepper">Pepper</option>'+ 
-      '<option value="ube">Ube</option>'+ 
-      '</select><span class="v28-map-note">Map icon = crop • multi-crop = multiple crop icons</span>';
+      '<option value="all">All Products</option>'+
+      Object.entries(PRODUCTS).map(([k,p])=>'<option value="'+k+'">'+esc(p.name)+'</option>').join('')+
+      '</select><span class="v28-map-note">Crop icon = product • multiple crops = multiple crop icons</span>';
 
     const title=panel.querySelector(".panel-title");
     if(title) title.insertAdjacentElement("afterend",box); else panel.prepend(box);
