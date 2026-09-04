@@ -234,6 +234,24 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v45-narrow-one-column-controls">
+/* V45: make the right-side control/KPI column narrower */
+#map > .toolbar,
+#map > .metrics{
+  width:min(100%, 360px)!important;
+  justify-self:end!important;
+}
+#map > .toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+}
+#map > .metrics{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
