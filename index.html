@@ -93,7 +93,7 @@ body:not(.ready)>.app{display:none!important}
 .bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 </style>
-<meta name="app-version" content="V16 - direct admin control visibility fix"></head>
+<meta name="app-version" content="V31 - Crop Supply Map added"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -117,6 +117,7 @@ body:not(.ready)>.app{display:none!important}
 <nav class="nav">
 <button class="active" data-view="map">📍 Mindanao Map</button>
 <button data-view="dashboard">⌂ Dashboard</button>
+<button data-view="cropSupplyMap">🌾 Crop Supply Map</button>
 <button data-view="pipeline">▣ Pipeline</button>
 <button data-view="activities">✓ Activities</button>
 <button data-view="companies">▦ Companies</button>
@@ -153,6 +154,69 @@ body:not(.ready)>.app{display:none!important}
 <div class="toolbar"><input id="search" placeholder="Search company, commodity or location…"><select id="statusFilter"><option value="all">All Status</option><option>New Lead</option><option>Prospect</option><option>Initial Inquiry</option><option>Active Discussion</option><option>Under Evaluation</option><option>Ongoing</option><option>Closed Deal</option><option>Trial Completed</option></select><select id="typeFilter"><option value="all">All Types</option><option>Customer</option><option>Supplier</option><option>Cooperative</option><option>Farm</option></select><button id="addCompanyBtn" class="admin-only">＋ Add Company</button></div>
 <div class="metrics"><div class="metric"><b id="mAll">0</b><span>Mapped Opportunities</span></div><div class="metric"><b id="mLead">0</b><span>New Leads</span></div><div class="metric"><b id="mActive">0</b><span>Active / Ongoing</span></div><div class="metric"><b id="mClosed">0</b><span>Closed Deals</span></div></div>
 <div class="map-layout"><div class="panel"><div class="panel-title">MINDANAO MAP</div><div id="bdMap" class="bd-map"></div><div class="legend"><span><i style="background:#0b9b52"></i>Closed / Ongoing</span><span><i style="background:#f59e0b"></i>New Lead</span><span><i style="background:#eab308"></i>Active</span><span><i style="background:#3b82f6"></i>Trial</span></div></div><div class="panel detail" id="detail"><div class="empty">Click a map marker to view the company or supplier information.</div></div></div>
+</section>
+
+
+<section id="cropSupplyMap" class="view">
+  <div class="csm-header">
+    <div>
+      <h1>Crop Supply Map</h1>
+      <p>Commercial crops within a 400 km radius from Stellar Seeds Corp.</p>
+    </div>
+    <div class="csm-header-badge">📍 Stellar Seeds Corp • Mindanao</div>
+  </div>
+
+  <div class="csm-layout">
+    <div class="panel csm-map-panel">
+      <div class="panel-title">CROP SUPPLY MAP • 400 KM RADIUS</div>
+      <div class="csm-map-wrap">
+        <div id="cropSupplyMapCanvas" class="csm-map"></div>
+
+        <div class="csm-overlay csm-legend">
+          <h3>CROP LEGEND</h3>
+          <div class="csm-legend-grid" id="cropLegend"></div>
+        </div>
+
+        <div class="csm-overlay csm-distance">
+          <h3>DISTANCE GUIDE</h3>
+          <div><i class="csm-ring-dot r0"></i><b>0–100 km</b><span>Very strong local supply</span></div>
+          <div><i class="csm-ring-dot r1"></i><b>100–200 km</b><span>Strong & regular supply</span></div>
+          <div><i class="csm-ring-dot r2"></i><b>200–300 km</b><span>Good supply / planned logistics</span></div>
+          <div><i class="csm-ring-dot r3"></i><b>300–400 km</b><span>Supplemental / seasonal supply</span></div>
+        </div>
+
+        <div class="csm-scale">Distances are approximate straight-line distances from the Stellar Seeds reference pin.</div>
+      </div>
+      <div class="csm-map-note">
+        <b>Reference point:</b> Stellar Seeds Corp. • 6.1637297° N, 125.1139568° E
+        <span>•</span> Always validate current production, seasonality, quality and logistics cost before sourcing.
+      </div>
+    </div>
+
+    <div class="csm-side">
+      <div class="panel csm-strongest">
+        <div class="panel-title">WHERE EACH CROP IS STRONGEST</div>
+        <div class="table-wrap">
+          <table class="table csm-table">
+            <thead><tr><th>Crop</th><th>Strongest Areas Within 400 km</th></tr></thead>
+            <tbody id="cropStrongestBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel csm-filter">
+        <div class="panel-title">FILTER / HIGHLIGHT BY CROP</div>
+        <select id="cropSupplyFilter">
+          <option value="all">Select crop to highlight</option>
+        </select>
+        <div id="cropSupplyButtons" class="csm-crop-buttons"></div>
+        <div class="csm-info">
+          <b>ⓘ Highlight mode</b>
+          <span>Select a crop to emphasize the areas where that crop is strongest within the 400 km sourcing radius.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="dashboard" class="view"><div class="metrics"><div class="metric"><b id="dAct">0</b><span>Activities</span></div><div class="metric"><b id="dComp">0</b><span>Companies</span></div><div class="metric"><b id="dLead">0</b><span>New Leads</span></div><div class="metric"><b id="dClosed">0</b><span>Closed Deals</span></div></div><div class="panel"><div class="panel-title">Business Development Snapshot</div><div id="dashCards" class="cards"></div></div></section>
@@ -1827,5 +1891,276 @@ function renderDashboard(){
   }
 })();
 </script>
+
+<style id="csm-v31-css">
+.csm-header{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:12px}
+.csm-header h1{margin:0;color:var(--green);font-size:25px}
+.csm-header p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.csm-header-badge{background:var(--light);border:1px solid #c9e4d4;color:var(--green);border-radius:10px;padding:8px 11px;font-size:11px;font-weight:750}
+.csm-layout{display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:12px;align-items:start}
+.csm-map-panel{padding:0;overflow:hidden}
+.csm-map-wrap{position:relative;height:720px;background:#eaf4ef}
+.csm-map{width:100%;height:100%;min-height:520px}
+.csm-map .leaflet-control-attribution{font-size:8px}
+.csm-overlay{position:absolute;z-index:500;background:rgba(255,255,255,.96);border:1px solid #d3e3da;border-radius:9px;box-shadow:0 5px 18px rgba(16,65,40,.10);padding:11px}
+.csm-overlay h3{margin:0 0 9px;color:#15563c;font-size:11px;letter-spacing:.2px}
+.csm-legend{left:12px;top:12px;width:190px}
+.csm-legend-grid{display:grid;grid-template-columns:1fr;gap:7px}
+.csm-legend-item{display:flex;align-items:center;gap:7px;font-size:10px;color:#29443a}
+.csm-legend-item .emoji{width:18px;text-align:center;font-size:16px}
+.csm-distance{left:12px;bottom:52px;width:230px}
+.csm-distance>div{display:grid;grid-template-columns:13px 62px 1fr;align-items:center;gap:5px;margin:7px 0;font-size:9px}
+.csm-distance>div b{font-size:9px}
+.csm-distance>div span{color:#6b7d74;line-height:1.25}
+.csm-ring-dot{width:13px;height:13px;border-radius:50%;display:block;border:2px dashed}
+.csm-ring-dot.r0{border-color:#16823b}
+.csm-ring-dot.r1{border-color:#2563eb}
+.csm-ring-dot.r2{border-color:#7c3aed}
+.csm-ring-dot.r3{border-color:#dc2626}
+.csm-scale{position:absolute;right:12px;bottom:12px;z-index:500;background:rgba(255,255,255,.95);border:1px solid #d3e3da;border-radius:8px;padding:8px 10px;font-size:9px;color:#52665d;max-width:310px}
+.csm-map-note{padding:10px 12px;background:#f5fbf7;border-top:1px solid var(--line);font-size:10px;color:#52665d;line-height:1.45}
+.csm-map-note span{padding:0 5px;color:#9ab2a6}
+.csm-side{display:grid;gap:12px}
+.csm-table th{font-size:10px;background:#eef7f2;color:#24513f}
+.csm-table td{font-size:10px;vertical-align:top}
+.csm-table td:first-child{white-space:nowrap;font-weight:750}
+.csm-crop-cell{display:flex;align-items:center;gap:6px}
+.csm-filter select{width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff;color:var(--ink);font-size:11px}
+.csm-crop-buttons{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:9px}
+.csm-crop-btn{border:1px solid #d5e4dc;background:#fff;border-radius:8px;min-height:43px;cursor:pointer;font-size:18px;display:grid;place-items:center;transition:.15s}
+.csm-crop-btn:hover{border-color:#16823b;background:#f2faf5}
+.csm-crop-btn.active{background:#e9f7ef;border-color:#16823b;box-shadow:0 0 0 2px rgba(22,130,59,.10)}
+.csm-info{margin-top:11px;border:1px solid #bfd7ef;background:#f2f8fd;border-radius:8px;padding:10px;color:#496578;font-size:10px;line-height:1.45}
+.csm-info b{display:block;color:#27617d;margin-bottom:3px}
+.csm-zone-label{min-width:110px;text-align:center;background:rgba(255,255,255,.94);border:1px solid #cfded6;border-radius:8px;padding:6px 7px;box-shadow:0 3px 10px rgba(0,0,0,.12);font-size:10px;color:#17382c}
+.csm-zone-label b{display:block;font-size:10px;margin-bottom:3px}
+.csm-zone-crops{font-size:15px;letter-spacing:1px;white-space:nowrap}
+.csm-zone-label.highlight{border:2px solid #16823b;background:#effaf3;box-shadow:0 4px 14px rgba(22,130,59,.24);transform:scale(1.08)}
+.csm-stellar-icon{width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#16823b;border:4px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center}
+.csm-stellar-icon span{transform:rotate(45deg);font-size:17px;color:#fff}
+.csm-stellar-label{background:#fff;border:2px solid #16823b;border-radius:7px;padding:5px 8px;font-weight:800;font-size:9px;color:#15563c;box-shadow:0 3px 10px rgba(0,0,0,.12);white-space:nowrap}
+@media(max-width:1100px){.csm-layout{grid-template-columns:1fr}.csm-side{grid-template-columns:1fr 1fr}.csm-map-wrap{height:650px}}
+@media(max-width:750px){.csm-header{align-items:flex-start;flex-direction:column}.csm-side{grid-template-columns:1fr}.csm-map-wrap{height:570px}.csm-legend{width:165px}.csm-distance{width:205px}.csm-crop-buttons{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:600px){.csm-map-wrap{height:520px}.csm-legend{left:6px;top:6px;width:145px;padding:8px}.csm-distance{left:6px;bottom:38px;width:190px;padding:8px}.csm-scale{right:6px;bottom:6px;font-size:8px;max-width:180px}.csm-zone-label{min-width:85px;padding:4px;font-size:8px}.csm-zone-crops{font-size:12px}.csm-header h1{font-size:21px}}
+</style>
+
+<script id="csm-v31-js">
+(function(){
+  "use strict";
+  if(window.__STELLAR_CROP_SUPPLY_MAP_V31__) return;
+  window.__STELLAR_CROP_SUPPLY_MAP_V31__=true;
+
+  const CENTER=[6.163729726185922,125.11395682116496];
+
+  const CROPS={
+    corn:{name:"Corn",emoji:"🌽",color:"#f2c400"},
+    coffee:{name:"Coffee",emoji:"☕",color:"#111111"},
+    cacao:{name:"Cacao",emoji:"🍫",color:"#7a4b2a"},
+    cassava:{name:"Cassava",emoji:"🌿",color:"#8b5e34"},
+    ube:{name:"Ube (Purple Yam)",emoji:"🍠",color:"#7a3db8"},
+    coconut:{name:"Coconut",emoji:"🥥",color:"#8b6f47"},
+    banana:{name:"Banana",emoji:"🍌",color:"#eab308"},
+    pineapple:{name:"Pineapple",emoji:"🍍",color:"#d97706"},
+    pepper:{name:"Black Pepper",emoji:"🫐",color:"#222222"},
+    rice:{name:"Rice",emoji:"🌾",color:"#c49a2e"},
+    sugarcane:{name:"Sugarcane",emoji:"🎋",color:"#2f8f46"}
+  };
+
+  const STRONGEST=[
+    ["corn", "Cotabato, Bukidnon, Davao del Norte, Sultan Kudarat, South Cotabato"],
+    ["coffee", "Davao del Sur, Bukidnon, South Cotabato, Sarangani"],
+    ["cacao", "Davao del Sur, Bukidnon, South Cotabato"],
+    ["cassava", "Agusan del Norte, Cotabato, Sultan Kudarat, Zamboanga del Norte"],
+    ["ube", "Bukidnon, South Cotabato, Davao del Norte"],
+    ["coconut", "Agusan del Norte, Zamboanga del Norte, Sarangani"],
+    ["banana", "Misamis Occidental, Sarangani, South Cotabato"],
+    ["pineapple", "Bukidnon, Davao del Norte, South Cotabato"],
+    ["pepper", "Davao del Sur, South Cotabato"],
+    ["rice", "Sultan Kudarat, Cotabato, South Cotabato"],
+    ["sugarcane", "Sultan Kudarat, Cotabato"]
+  ];
+
+  const ZONES=[
+    {name:"South Cotabato",pos:[6.215,125.04],crops:["corn","coffee","cacao","cassava","pineapple"],distance:10},
+    {name:"Sultan Kudarat",pos:[6.506,124.419],crops:["corn","cassava","rice","sugarcane"],distance:86},
+    {name:"Cotabato Province",pos:[7.204,124.231],crops:["corn","cacao","pineapple","cassava","rice"],distance:151},
+    {name:"Davao del Sur",pos:[6.70,125.30],crops:["coffee","cacao","pepper"],distance:63},
+    {name:"Davao del Norte",pos:[7.56,125.65],crops:["corn","pineapple","banana","ube"],distance:166},
+    {name:"Bukidnon",pos:[8.15,125.12],crops:["corn","coffee","cacao","pineapple","ube"],distance:221},
+    {name:"Agusan del Norte",pos:[9.00,125.50],crops:["cassava","coconut"],distance:318},
+    {name:"Zamboanga del Norte",pos:[8.00,122.90],crops:["corn","cassava","coconut"],distance:318},
+    {name:"Misamis Occidental",pos:[8.35,123.75],crops:["corn","cassava","banana"],distance:286},
+    {name:"Sarangani",pos:[5.85,125.28],crops:["coffee","coconut","pineapple","banana"],distance:39}
+  ];
+
+  const RINGS=[
+    {m:100000,label:"0 – 100 km",color:"#16823b",fill:"#16823b"},
+    {m:200000,label:"100 – 200 km",color:"#2563eb",fill:"#2563eb"},
+    {m:300000,label:"200 – 300 km",color:"#7c3aed",fill:"#7c3aed"},
+    {m:400000,label:"300 – 400 km",color:"#dc2626",fill:"#dc2626"}
+  ];
+
+  let map=null;
+  let zoneMarkers=[];
+  let selected="all";
+
+  function el(id){return document.getElementById(id)}
+  function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+  function cropEmoji(keys){
+    return (keys||[]).map(k=>CROPS[k]?.emoji||"").join(" ");
+  }
+
+  function installLegend(){
+    const box=el("cropLegend");
+    if(!box)return;
+    box.innerHTML=Object.entries(CROPS).map(([key,c])=>
+      '<div class="csm-legend-item"><span class="emoji">'+c.emoji+'</span><span>'+escapeHtml(c.name)+'</span></div>'
+    ).join("");
+  }
+
+  function installStrongestTable(){
+    const body=el("cropStrongestBody");
+    if(!body)return;
+    body.innerHTML=STRONGEST.map(([key,areas])=>{
+      const c=CROPS[key];
+      return '<tr><td><div class="csm-crop-cell"><span style="font-size:16px">'+c.emoji+'</span><span>'+escapeHtml(c.name)+'</span></div></td><td>'+escapeHtml(areas)+'</td></tr>';
+    }).join("");
+  }
+
+  function installFilter(){
+    const select=el("cropSupplyFilter"),buttons=el("cropSupplyButtons");
+    if(!select||!buttons)return;
+
+    select.innerHTML='<option value="all">Select crop to highlight</option>'+
+      Object.entries(CROPS).map(([key,c])=>'<option value="'+key+'">'+c.emoji+' '+escapeHtml(c.name)+'</option>').join("");
+
+    buttons.innerHTML=Object.entries(CROPS).map(([key,c])=>
+      '<button type="button" class="csm-crop-btn" data-crop="'+key+'" title="'+escapeHtml(c.name)+'">'+c.emoji+'</button>'
+    ).join("");
+
+    select.addEventListener("change",()=>setHighlight(select.value));
+    buttons.querySelectorAll(".csm-crop-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>setHighlight(btn.dataset.crop===selected? "all":btn.dataset.crop));
+    });
+  }
+
+  function setHighlight(key){
+    selected=CROPS[key]?key:"all";
+    const select=el("cropSupplyFilter");
+    if(select)select.value=selected;
+    document.querySelectorAll(".csm-crop-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.crop===selected));
+    zoneMarkers.forEach(item=>{
+      const hit=selected==="all"||item.zone.crops.includes(selected);
+      if(item.marker.getElement()){
+        item.marker.getElement().querySelector(".csm-zone-label")?.classList.toggle("highlight",hit&&selected!=="all");
+        item.marker.getElement().style.opacity=(selected==="all"||hit)?"1":"0.28";
+      }
+    });
+  }
+
+  function zoneIcon(zone){
+    const label=document.createElement("div");
+    label.className="csm-zone-label";
+    label.innerHTML="<b>"+escapeHtml(zone.name)+"</b><div class=\"csm-zone-crops\">"+cropEmoji(zone.crops)+"</div>";
+    return L.divIcon({className:"",html:label.outerHTML,iconSize:null,iconAnchor:[55,32]});
+  }
+
+  function addMap(){
+    if(map||typeof L==="undefined")return;
+    const node=el("cropSupplyMapCanvas");
+    if(!node)return;
+
+    map=L.map(node,{center:CENTER,zoom:7,minZoom:5,maxZoom:10,zoomControl:true,worldCopyJump:false});
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+      maxZoom:19,
+      noWrap:true,
+      attribution:"© OpenStreetMap contributors"
+    }).addTo(map);
+
+    RINGS.forEach((ring,i)=>{
+      L.circle(CENTER,{
+        radius:ring.m,
+        color:ring.color,
+        weight:1.5,
+        dashArray:"7 6",
+        fillColor:ring.fill,
+        fillOpacity:i===3?0.025:0.012,
+        interactive:false
+      }).addTo(map);
+    });
+
+    // Stellar Seeds reference pin.
+    const stellarIcon=L.divIcon({
+      className:"",
+      html:'<div class="csm-stellar-icon"><span>✦</span></div>',
+      iconSize:[36,36],
+      iconAnchor:[18,35]
+    });
+    const stellar=L.marker(CENTER,{icon:stellarIcon,zIndexOffset:10000,title:"Stellar Seeds Corp"}).addTo(map);
+    stellar.bindTooltip('<span class="csm-stellar-label">STELLAR SEEDS CORP.</span>',{
+      direction:"bottom",permanent:true,offset:[0,7],opacity:1
+    });
+
+    ZONES.forEach(zone=>{
+      const marker=L.marker(zone.pos,{icon:zoneIcon(zone),zIndexOffset:200}).addTo(map);
+      marker.bindPopup(
+        '<div style="min-width:180px"><b>'+escapeHtml(zone.name)+'</b>'+
+        '<div style="margin-top:5px;font-size:12px"><b>Approx. distance:</b> '+zone.distance+' km</div>'+
+        '<div style="margin-top:5px;font-size:12px"><b>Key crops:</b> '+zone.crops.map(k=>CROPS[k].emoji+" "+CROPS[k].name).join(", ")+'</div></div>'
+      );
+      zoneMarkers.push({zone,marker});
+    });
+
+    const bounds=L.latLngBounds([CENTER]);
+    // Fit the map to the outer 400 km ring while keeping useful detail.
+    const edge=L.latLng(CENTER[0]+(400/111.2),CENTER[1]);
+    bounds.extend(edge); bounds.extend(L.latLng(CENTER[0]-(400/111.2),CENTER[1]));
+    bounds.extend(L.latLng(CENTER[0],CENTER[1]+(400/(111.2*Math.cos(CENTER[0]*Math.PI/180)))));
+    bounds.extend(L.latLng(CENTER[0],CENTER[1]-(400/(111.2*Math.cos(CENTER[0]*Math.PI/180)))));
+    map.fitBounds(bounds,{padding:[15,15]});
+    requestAnimationFrame(()=>map.invalidateSize(true));
+    setTimeout(()=>map.invalidateSize(true),250);
+    setHighlight("all");
+  }
+
+  function activateTab(){
+    const navButtons=document.querySelectorAll(".nav button");
+    navButtons.forEach(b=>b.classList.toggle("active",b.dataset.view==="cropSupplyMap"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    el("cropSupplyMap")?.classList.add("active");
+    const archive=document.getElementById("sidebarReportArchive");
+    if(archive)archive.classList.add("archive-hidden");
+    addMap();
+    setTimeout(()=>map&&map.invalidateSize(true),100);
+  }
+
+  function wireNav(){
+    const nav=document.querySelector(".nav");
+    if(!nav)return;
+    const btn=nav.querySelector('[data-view="cropSupplyMap"]');
+    if(!btn||btn.dataset.csmWired)return;
+    btn.dataset.csmWired="1";
+    btn.addEventListener("click",activateTab);
+  }
+
+  function init(){
+    installLegend();
+    installStrongestTable();
+    installFilter();
+    wireNav();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",init,{once:true});
+  }else init();
+
+  // Re-wire after the base app initializes or redraws navigation.
+  setTimeout(wireNav,300);
+  setTimeout(wireNav,1200);
+})();
+</script>
+
 </body>
 </html>
