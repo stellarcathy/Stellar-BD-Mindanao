@@ -554,6 +554,68 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v53-clickable-product-cards">
+/* V53: replace the product dropdown with clickable crop cards. */
+#map > .map-layout > .panel > .v53-product-picker{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  margin:6px 0 8px!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-card{
+  width:100%!important;
+  min-height:48px!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:7px 10px!important;
+  border:1px solid #d9e8df!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  cursor:pointer!important;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-card:hover{
+  transform:translateY(-1px)!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-card.active{
+  background:#e8f8ee!important;
+  border-color:#16823b!important;
+  box-shadow:0 0 0 1px rgba(22,130,59,.08)!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-icons{
+  width:48px!important;
+  min-width:48px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:1px!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-icon{
+  font-size:30px!important;
+  line-height:34px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-all-products .v53-product-icon{
+  font-size:23px!important;
+}
+#map > .map-layout > .panel > .v53-product-picker .v53-product-card-name{
+  font-size:16px!important;
+  font-weight:700!important;
+  color:#173b2c!important;
+  line-height:1.2!important;
+}
+#map > .map-layout > .panel > .v53-product-note{
+  margin:2px 0 8px!important;
+  font-size:11px!important;
+  color:#6b7d74!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
@@ -2210,25 +2272,44 @@ function renderDashboard(){
 
     const box=document.createElement("div");
     box.id="v28MapProductFilter";
-    box.className="v28-map-filter";
-    box.innerHTML='<label>Product:</label><select id="v28MapProductSelect">'+
-      '<option value="all">All Products</option>'+
-      Object.entries(PRODUCTS).map(([k,p])=>'<option value="'+k+'">'+esc(p.name)+'</option>').join('')+
-      '</select><span class="v28-map-note">Crop icon = product • multiple crops = multiple crop icons</span>';
+    box.className="v28-map-filter v53-product-picker";
+
+    const allIcons=Object.values(PRODUCTS).slice(0,4).map(function(p){
+      return '<span class="v53-product-icon" title="'+esc(p.name)+'">'+p.icon+'</span>';
+    }).join("");
+
+    box.innerHTML='<div class="v53-product-card v53-all-products active" data-v28-product-card="all">'+
+      '<div class="v53-product-icons">'+allIcons+'</div>'+
+      '<span class="v53-product-card-name">All Products</span>'+
+    '</div>'+
+    Object.entries(PRODUCTS).map(function(entry){
+      const k=entry[0], p=entry[1];
+      return '<div class="v53-product-card" data-v28-product-card="'+esc(k)+'">'+
+        '<div class="v53-product-icons"><span class="v53-product-icon" title="'+esc(p.name)+'">'+p.icon+'</span></div>'+
+        '<span class="v53-product-card-name">'+esc(p.name)+'</span>'+
+      '</div>';
+    }).join("");
 
     const title=panel.querySelector(".panel-title");
     if(title) title.insertAdjacentElement("afterend",box); else panel.prepend(box);
 
     const legend=document.createElement("div");
-    legend.className="v28-map-legend";
-    legend.innerHTML=Object.entries(PRODUCTS).map(([k,p])=>`<span class="legend-item"><span class="legend-crop-icon" title="${esc(p.name)}">${p.icon}</span><span>${esc(p.name)}</span></span>`).join("");
+    legend.className="v28-map-legend v53-product-note";
+    legend.innerHTML='<span>Click a product to show its companies on the map.</span>';
     box.insertAdjacentElement("afterend",legend);
 
-    const select=document.getElementById("v28MapProductSelect");
-    if(select){
-      select.value=selectedProduct;
-      select.addEventListener("change",function(){setProduct(this.value);});
-    }
+    box.querySelectorAll("[data-v28-product-card]").forEach(function(card){
+      card.addEventListener("click",function(){
+        setProduct(this.dataset.v28ProductCard);
+        box.querySelectorAll("[data-v28-product-card]").forEach(function(c){
+          c.classList.toggle("active",c===card);
+        });
+      });
+    });
+
+    box.querySelectorAll("[data-v28-product-card]").forEach(function(card){
+      card.classList.toggle("active",card.dataset.v28ProductCard===selectedProduct);
+    });
   }
 
   function wrapRefreshMap(){
