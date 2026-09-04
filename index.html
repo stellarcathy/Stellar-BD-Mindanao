@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V43 - Approved map-first layout"><style id="v40-map-company-modal-css">
+<meta name="app-version" content="V44 - Map first, controls below map"><style id="v40-map-company-modal-css">
 #map .map-layout{grid-template-columns:1fr!important;display:grid}
 #map .map-layout>.detail{display:none!important}
 #map .map-layout>.panel{min-width:0}
@@ -114,34 +114,33 @@ body:not(.ready)>.app{display:none!important}
 .map-company-dialog .pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}
 .map-company-dialog .actions{margin-top:14px}
 </style>
-<style id="v43-approved-layout-css">
-/* V43 — approved reference layout:
-   Search + KPI cards move below the Mindanao map while all existing IDs/data stay intact. */
-#map.v43-map-first-approved{
+<style id="v44-map-controls-below">
+/* V44 — ONLY requested layout change.
+   Mindanao Map first; existing search/filter controls and KPI cards below it.
+   Crop Supply Map and all other tabs remain untouched. */
+#map{
   display:flex!important;
   flex-direction:column!important;
 }
-#map.v43-map-first-approved > .map-tools{
-  order:2!important;
-}
-#map.v43-map-first-approved > .kpi-grid{
-  order:3!important;
-}
-#map.v43-map-first-approved > .map-main{
+#map > .map-layout{
   order:1!important;
 }
-#map.v43-map-first-approved .map-main{
-  width:100%!important;
-  max-width:none!important;
+#map > .toolbar{
+  order:2!important;
+  margin-top:13px!important;
+  margin-bottom:13px!important;
 }
-#map.v43-map-first-approved .map-main .panel{
+#map > .metrics{
+  order:3!important;
+  margin-top:0!important;
+}
+#map > .map-layout .panel{
   width:100%!important;
 }
-#map.v43-map-first-approved .map-main .bd-map{
-  width:100%!important;
+#map > .map-layout{
+  grid-template-columns:1fr!important;
 }
-#map.v43-map-first-approved .map-side,
-#map.v43-map-first-approved .detail{
+#map > .map-layout > .detail{
   display:none!important;
 }
 </style>
@@ -2403,35 +2402,6 @@ function renderDashboard(){
   document.addEventListener("keydown",function(e){
     if(e.key==="Escape" && modal && modal.classList.contains("is-open")) closeModal();
   });
-})();
-</script>
-
-<script id="v43-approved-layout-js">
-(function(){
-  function applyV43(){
-    const map=document.getElementById("map");
-    if(!map || map.dataset.v43Applied==="1") return;
-    map.classList.add("v43-map-first-approved");
-    // Detect the existing blocks by their content rather than inventing new data structures.
-    const kids=Array.from(map.children);
-    const tools=kids.find(el=>el.querySelector && el.querySelector('input[placeholder*="Search company"]'));
-    const kpis=kids.find(el=>el.querySelector && el.querySelector(".kpi-card,.stat-card,.metric-card"));
-    const mapMain=kids.find(el=>el.querySelector && el.querySelector(".bd-map,#mapCanvas"));
-    if(tools) tools.classList.add("map-tools");
-    if(kpis) kpis.classList.add("kpi-grid");
-    if(mapMain) mapMain.classList.add("map-main");
-    map.dataset.v43Applied="1";
-    // Leaflet needs a resize after its container's geometry changes.
-    setTimeout(function(){
-      if(window.map && typeof window.map.invalidateSize==="function") window.map.invalidateSize();
-    },250);
-    setTimeout(function(){
-      if(window.map && typeof window.map.invalidateSize==="function") window.map.invalidateSize();
-    },800);
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>setTimeout(applyV43,200),{once:true});
-  else setTimeout(applyV43,200);
-  window.applyV43=applyV43;
 })();
 </script>
 </body>
