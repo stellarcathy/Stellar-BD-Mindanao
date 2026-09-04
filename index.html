@@ -353,6 +353,85 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v49-product-legend-left">
+/* V49: place the product selector + crop legend on the left of the Mindanao map.
+   Keep the KPI/filter column on the right and leave Crop Supply Map independent. */
+#map > .map-layout{
+  display:block!important;
+  width:100%!important;
+}
+#map > .map-layout > .panel{
+  display:grid!important;
+  grid-template-columns:190px minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto auto!important;
+  column-gap:12px!important;
+  align-items:start!important;
+}
+#map > .map-layout > .panel > .panel-title{
+  grid-column:1 / -1!important;
+  grid-row:1!important;
+}
+#map > .map-layout > .panel > .v28-map-filter{
+  grid-column:1!important;
+  grid-row:2!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:6px!important;
+  margin:0 0 6px!important;
+}
+#map > .map-layout > .panel > .v28-map-filter label{
+  font-size:10px!important;
+}
+#map > .map-layout > .panel > .v28-map-filter select{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+#map > .map-layout > .panel > .v28-map-legend{
+  grid-column:1!important;
+  grid-row:3!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:8px!important;
+  margin:0!important;
+  padding-right:4px!important;
+}
+#map > .map-layout > .panel > .v28-map-legend .legend-item{
+  margin:0!important;
+}
+#map > .map-layout > .panel > .bd-map{
+  grid-column:2!important;
+  grid-row:2 / span 2!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:620px!important;
+}
+#map > .map-layout > .panel > .legend:not(.v28-map-legend){
+  grid-column:1 / -1!important;
+  grid-row:4!important;
+}
+@media(max-width:900px){
+  #map > .map-layout > .panel{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto auto auto!important;
+  }
+  #map > .map-layout > .panel > .panel-title,
+  #map > .map-layout > .panel > .v28-map-filter,
+  #map > .map-layout > .panel > .v28-map-legend,
+  #map > .map-layout > .panel > .bd-map,
+  #map > .map-layout > .panel > .legend:not(.v28-map-legend){
+    grid-column:1!important;
+  }
+  #map > .map-layout > .panel > .v28-map-filter{grid-row:2!important;}
+  #map > .map-layout > .panel > .v28-map-legend{grid-row:3!important;}
+  #map > .map-layout > .panel > .bd-map{grid-row:4!important;min-height:480px!important;}
+  #map > .map-layout > .panel > .legend:not(.v28-map-legend){grid-row:5!important;}
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
