@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V44 - Map first, controls below map"><style id="v40-map-company-modal-css">
+<meta name="app-version" content="V41 - Fixed crop icon company popup"><style id="v40-map-company-modal-css">
 #map .map-layout{grid-template-columns:1fr!important;display:grid}
 #map .map-layout>.detail{display:none!important}
 #map .map-layout>.panel{min-width:0}
@@ -113,38 +113,7 @@ body:not(.ready)>.app{display:none!important}
 .map-company-dialog .val{font-size:13px;line-height:1.45;margin-top:3px}
 .map-company-dialog .pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}
 .map-company-dialog .actions{margin-top:14px}
-</style>
-<style id="v44-map-controls-below">
-/* V44 — ONLY requested layout change.
-   Mindanao Map first; existing search/filter controls and KPI cards below it.
-   Crop Supply Map and all other tabs remain untouched. */
-#map{
-  display:flex!important;
-  flex-direction:column!important;
-}
-#map > .map-layout{
-  order:1!important;
-}
-#map > .toolbar{
-  order:2!important;
-  margin-top:13px!important;
-  margin-bottom:13px!important;
-}
-#map > .metrics{
-  order:3!important;
-  margin-top:0!important;
-}
-#map > .map-layout .panel{
-  width:100%!important;
-}
-#map > .map-layout{
-  grid-template-columns:1fr!important;
-}
-#map > .map-layout > .detail{
-  display:none!important;
-}
-</style>
-</head>
+</style></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
