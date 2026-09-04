@@ -2009,9 +2009,10 @@ Ube = Purple
     pepper:{name:"Black Pepper",color:"#111111",icon:"🌶️"},
     ube:{name:"Ube",color:"#7a3db8",icon:"🍠"},
     potato:{name:"Potato",color:"#a16207",icon:"🥔"},
-    greenpeas:{name:"Green Peas",color:"#16a34a",icon:"🫛"},
     carrots:{name:"Carrots",color:"#ea580c",icon:"🥕"},
-    bellpepper:{name:"Bell Pepper",color:"#dc2626",icon:"🫑"}
+    bellpepper:{name:"Bell Pepper",color:"#dc2626",icon:"🫑"},
+    rice:{name:"Rice",color:"#d4a017",icon:"🌾"},
+    greenpeas:{name:"Green Peas",color:"#16a34a",icon:"🫛"}
   };
 
   let selectedProduct="all";
@@ -2076,6 +2077,7 @@ Ube = Purple
     if(/\bgreen\s*peas?\b/.test(raw)) keys.push("greenpeas");
     if(/\bcarrots?\b/.test(raw)) keys.push("carrots");
     if(/\bbell\s*pepper\b/.test(raw)) keys.push("bellpepper");
+    if(/\brice\b/.test(raw)) keys.push("rice");
     return [...new Set(keys)];
   }
 
