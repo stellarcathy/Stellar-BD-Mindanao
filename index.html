@@ -96,7 +96,24 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V38 - Complete crop product selector"></head>
+<meta name="app-version" content="V40 - Full-width map with click-for-company modal"><style id="v40-map-company-modal-css">
+#map .map-layout{grid-template-columns:1fr!important;display:grid}
+#map .map-layout>.detail{display:none!important}
+#map .map-layout>.panel{min-width:0}
+#map .bd-map{width:100%!important}
+.map-company-modal{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center}
+.map-company-modal.is-open{display:flex}
+.map-company-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.42)}
+.map-company-dialog{position:relative;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 55px rgba(0,0,0,.25);padding:22px}
+.map-company-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#5b6a63;font-size:28px;line-height:1;border-radius:8px;cursor:pointer}
+.map-company-dialog .detail h2{margin:0;padding-right:35px;font-size:21px}
+.map-company-dialog .type{font-size:11px;color:var(--green);font-weight:800;margin:4px 0 12px}
+.map-company-dialog .drow{border-bottom:1px solid var(--line);padding:10px 0}
+.map-company-dialog .lab{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+.map-company-dialog .val{font-size:13px;line-height:1.45;margin-top:3px}
+.map-company-dialog .pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}
+.map-company-dialog .actions{margin-top:14px}
+</style></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -156,9 +173,17 @@ body:not(.ready)>.app{display:none!important}
 <section id="map" class="view">
 <div class="toolbar"><input id="search" placeholder="Search company, commodity or location…"><select id="statusFilter"><option value="all">All Status</option><option>New Lead</option><option>Prospect</option><option>Initial Inquiry</option><option>Active Discussion</option><option>Under Evaluation</option><option>Ongoing</option><option>Closed Deal</option><option>Trial Completed</option></select><select id="typeFilter"><option value="all">All Types</option><option>Customer</option><option>Supplier</option><option>Cooperative</option><option>Farm</option></select><button id="addCompanyBtn" class="admin-only">＋ Add Company</button></div>
 <div class="metrics"><div class="metric"><b id="mAll">0</b><span>Mapped Opportunities</span></div><div class="metric"><b id="mLead">0</b><span>New Leads</span></div><div class="metric"><b id="mActive">0</b><span>Active / Ongoing</span></div><div class="metric"><b id="mClosed">0</b><span>Closed Deals</span></div></div>
-<div class="map-layout"><div class="panel"><div class="panel-title">MINDANAO MAP</div><div id="bdMap" class="bd-map"></div><div class="legend"><span><i style="background:#0b9b52"></i>Closed / Ongoing</span><span><i style="background:#f59e0b"></i>New Lead</span><span><i style="background:#eab308"></i>Active</span><span><i style="background:#3b82f6"></i>Trial</span></div></div><div class="panel detail" id="detail"><div class="empty">Click a map marker to view the company or supplier information.</div></div></div>
+<div class="map-layout"><div class="panel"><div class="panel-title">MINDANAO MAP</div><div id="bdMap" class="bd-map"></div><div class="legend"><span><i style="background:#0b9b52"></i>Closed / Ongoing</span><span><i style="background:#f59e0b"></i>New Lead</span><span><i style="background:#eab308"></i>Active</span><span><i style="background:#3b82f6"></i>Trial</span></div></div></div>
 </section>
 
+
+<div id="mapCompanyModal" class="map-company-modal" aria-hidden="true">
+  <div class="map-company-backdrop" id="mapCompanyModalBackdrop"></div>
+  <div class="map-company-dialog" role="dialog" aria-modal="true" aria-labelledby="mapCompanyModalTitle">
+    <button type="button" class="map-company-close" id="mapCompanyModalClose" aria-label="Close company information">×</button>
+    <div id="mapCompanyModalContent"></div>
+  </div>
+</div>
 
 <section id="cropSupplyMap" class="view active">
   <div class="csm-header">
@@ -428,6 +453,16 @@ async function showDetail(x){
   }
   await loadStatusHistory(x.id);
 }
+  // V40: Mindanao Map uses the same detail content in a centered modal.
+  const mapRoot=$("map"), modal=$("mapCompanyModal"), modalContent=$("mapCompanyModalContent");
+  if(mapRoot && mapRoot.classList.contains("active") && modal && modalContent){
+    modalContent.innerHTML=$("detail").innerHTML;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    const close=$("mapCompanyModalClose"); if(close) close.focus();
+  }
+
 function refreshMap(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];filtered().forEach(x=>{let m=L.marker([x.lat,x.lon],{icon:icon(x.status)}).addTo(map);m.bindTooltip(x.name,{direction:"top"});m.on("click",()=>showDetail(x));markers.push(m)})}
 function render(){let a=filtered();$("mAll").textContent=a.length;$("mLead").textContent=a.filter(x=>x.status==="New Lead").length;$("mActive").textContent=a.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("mClosed").textContent=a.filter(x=>x.status==="Closed Deal").length;$("sideLeads").textContent=companies.filter(x=>x.status==="New Lead").length;$("sideActive").textContent=companies.filter(x=>["Active Discussion","Under Evaluation","Initial Inquiry","Ongoing","Prospect"].includes(x.status)).length;$("sideClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;$("sideTotal").textContent=companies.length;$("dAct").textContent=activities.length;$("dComp").textContent=companies.length;$("dLead").textContent=companies.filter(x=>x.status==="New Lead").length;$("dClosed").textContent=companies.filter(x=>x.status==="Closed Deal").length;
 $("pipelineBody").innerHTML=companies.map(x=>'<tr><td><b>'+x.name+'</b><br><span style="color:#6b7d74">'+x.location+'</span></td><td>'+x.commodity+'</td><td>'+x.volume+'</td><td>'+x.opportunity+'</td><td><span class="pill">'+x.status+'</span></td><td>'+x.next+'</td></tr>').join("");
@@ -2302,6 +2337,23 @@ function renderDashboard(){
     if(typeof companies==="undefined"||!companies.length)setTimeout(recover,1000);
   }
   setTimeout(recover,1000);
+})();
+</script>
+
+<script id="v40-map-company-modal-js">
+(function(){
+  const modal=$("mapCompanyModal"), close=$("mapCompanyModalClose"), backdrop=$("mapCompanyModalBackdrop");
+  function closeModal(){
+    if(!modal)return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+  if(close) close.addEventListener("click",closeModal);
+  if(backdrop) backdrop.addEventListener("click",closeModal);
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape" && modal && modal.classList.contains("is-open")) closeModal();
+  });
 })();
 </script>
 </body>
