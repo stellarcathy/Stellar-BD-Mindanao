@@ -275,6 +275,38 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v47-compact-controls-no-search">
+/* V47: remove the search field and keep the right control column compact */
+#map #search{
+  display:none!important;
+}
+#map > .toolbar,
+#map > .metrics{
+  width:min(100%, 220px)!important;
+  justify-self:end!important;
+}
+#map > .toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+}
+#map > .toolbar select,
+#map > .toolbar button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:220px!important;
+  box-sizing:border-box!important;
+}
+#map > .metrics{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+}
+#map > .metrics .metric{
+  width:100%!important;
+  min-width:0!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
