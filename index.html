@@ -92,8 +92,11 @@ body:not(.ready)>.app{display:none!important}
 .bd-history-date{font-size:10px;color:var(--muted)}
 .bd-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
+/* V37 — crop illustration legend */
+.legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
+.legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V36 - Viewer data loading + crop icons"></head>
+<meta name="app-version" content="V37 - Crop icon legend"></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -1729,10 +1732,7 @@ function renderDashboard(){
 
     const legend=document.createElement("div");
     legend.className="v28-map-legend";
-    legend.innerHTML=Object.keys(PRODUCTS).map(function(key){
-      const p=PRODUCTS[key];
-      return '<span><i style="background:'+p.color+'"></i>'+esc(p.name)+'</span>';
-    }).join("");
+    legend.innerHTML=Object.entries(PRODUCTS).map(([k,p])=>`<span class="legend-item"><span class="legend-crop-icon" title="${esc(p.name)}">${p.icon}</span><span>${esc(p.name)}</span></span>`).join("");
     box.insertAdjacentElement("afterend",legend);
 
     const select=document.getElementById("v28MapProductSelect");
