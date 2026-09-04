@@ -96,7 +96,7 @@ body:not(.ready)>.app{display:none!important}
 .legend-item{display:inline-flex!important;align-items:center;gap:5px;margin-right:11px;white-space:nowrap;vertical-align:middle}
 .legend-crop-icon{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;font-size:18px;line-height:1;vertical-align:middle;flex:0 0 21px}
 </style>
-<meta name="app-version" content="V42 - Map-first layout"><style id="v40-map-company-modal-css">
+<meta name="app-version" content="V41 - Fixed crop icon company popup"><style id="v40-map-company-modal-css">
 #map .map-layout{grid-template-columns:1fr!important;display:grid}
 #map .map-layout>.detail{display:none!important}
 #map .map-layout>.panel{min-width:0}
@@ -113,60 +113,7 @@ body:not(.ready)>.app{display:none!important}
 .map-company-dialog .val{font-size:13px;line-height:1.45;margin-top:3px}
 .map-company-dialog .pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--light);color:var(--green);font-size:10px;font-weight:800}
 .map-company-dialog .actions{margin-top:14px}
-</style>
-<style id="v42-map-first-layout">
-/* V42 — Make the Mindanao Map the first visual focus.
-   Existing search, filters and KPI cards are retained and moved below the map. */
-#map.v42-map-first{
-  display:flex!important;
-  flex-direction:column!important;
-}
-#map.v42-map-first .v42-map-panel{
-  order:1!important;
-  width:100%!important;
-}
-#map.v42-map-first .v42-controls{
-  order:2!important;
-}
-#map.v42-map-first .v42-kpis{
-  order:3!important;
-}
-#map.v42-map-first .v42-map-panel .panel{
-  width:100%!important;
-}
-#map.v42-map-first .v42-map-panel .map-layout{
-  grid-template-columns:1fr!important;
-}
-#map.v42-map-first .v42-map-panel .detail{
-  display:none!important;
-}
-#map.v42-map-first .v42-map-panel .bd-map{
-  width:100%!important;
-  min-height:600px!important;
-}
-#map.v42-map-first .v42-controls{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 220px 180px auto!important;
-  gap:12px!important;
-  margin-top:16px!important;
-}
-#map.v42-map-first .v42-kpis{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:12px!important;
-  margin-top:12px!important;
-}
-@media(max-width:900px){
-  #map.v42-map-first .v42-controls{grid-template-columns:1fr 1fr!important}
-  #map.v42-map-first .v42-kpis{grid-template-columns:1fr 1fr!important}
-}
-@media(max-width:600px){
-  #map.v42-map-first .v42-controls{grid-template-columns:1fr!important}
-  #map.v42-map-first .v42-kpis{grid-template-columns:1fr!important}
-  #map.v42-map-first .v42-map-panel .bd-map{min-height:480px!important}
-}
-</style>
-</head>
+</style></head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
@@ -2424,59 +2371,6 @@ function renderDashboard(){
   document.addEventListener("keydown",function(e){
     if(e.key==="Escape" && modal && modal.classList.contains("is-open")) closeModal();
   });
-})();
-</script>
-
-<script id="v42-map-first-js">
-(function(){
-  function applyV42MapFirst(){
-    const mapView=document.getElementById("map");
-    if(!mapView || mapView.dataset.v42Applied==="1") return;
-
-    const main = document.querySelector("main");
-    if(!main) return;
-
-    // Identify existing controls/KPI/map blocks by their current structure.
-    const mapPanel = mapView.querySelector(".panel.map, .map-panel, .map-layout");
-    const allPanels = Array.from(main.children);
-
-    // Locate the search/filter row and KPI row using their distinctive controls.
-    let controls = null;
-    let kpis = null;
-    for(const el of allPanels){
-      if(el===mapView) continue;
-      if(!controls && el.querySelector && el.querySelector('input[placeholder*="Search company"], input[placeholder*="Search"]')){
-        controls=el;
-      }
-      if(!kpis && el.querySelector && el.querySelector(".kpi-card, .stat-card, .metric-card")){
-        kpis=el;
-      }
-    }
-
-    // If the app's current structure has the controls/KPIs outside the map section,
-    // move them inside the map view, immediately after the map.
-    if(controls && !mapView.contains(controls)){
-      controls.classList.add("v42-controls");
-    }
-    if(kpis && !mapView.contains(kpis)){
-      kpis.classList.add("v42-kpis");
-    }
-
-    // Find the actual map-containing block and mark it as first.
-    const candidates=Array.from(mapView.querySelectorAll(".panel,.map-layout,.bd-map")).filter(Boolean);
-    const actualMap=candidates.find(el=>el.querySelector && el.querySelector(".bd-map,#mapCanvas,#mindanaoMap")) || candidates[0];
-    if(actualMap) actualMap.classList.add("v42-map-panel");
-
-    mapView.classList.add("v42-map-first");
-    mapView.dataset.v42Applied="1";
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",()=>setTimeout(applyV42MapFirst,250),{once:true});
-  }else{
-    setTimeout(applyV42MapFirst,250);
-  }
-  window.applyV42MapFirst=applyV42MapFirst;
 })();
 </script>
 </body>
