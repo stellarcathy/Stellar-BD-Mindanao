@@ -252,6 +252,29 @@ body:not(.ready)>.app{display:none!important}
 }
 </style>
 
+
+<style id="v46-extra-narrow-controls">
+/* V46: compact right-side controls to save horizontal space */
+#map > .toolbar,
+#map > .metrics{
+  width:min(100%, 280px)!important;
+  justify-self:end!important;
+}
+#map > .toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+}
+#map > .metrics{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+}
+#map > .toolbar input,
+#map > .toolbar select,
+#map > .toolbar button{
+  max-width:280px!important;
+}
+</style>
+
 </head>
 <body class="not-ready">
 <div id="authGate" class="auth-gate">
